@@ -6,7 +6,7 @@ SRCS = main.c
 
 OBJS = $(SRCS:.c=.o)
 
-CFLAGS = -Wall -Wextra -Werror -O
+CFLAGS = -Wall -Wextra -std=c99
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
