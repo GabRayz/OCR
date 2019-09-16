@@ -2,7 +2,7 @@ CC = gcc
 
 NAME = ocr
 
-SRCS = main.c
+SRCS = main.c matrix.c
 
 OBJS = $(SRCS:.c=.o)
 
