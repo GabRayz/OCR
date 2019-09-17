@@ -2,6 +2,9 @@
     Homemaid matrix lib
 */
 
+#ifndef MATRIX_H
+# define MATRIX_H
+
 typedef struct _Matrix {
     int width;
     int height;
@@ -26,3 +29,5 @@ Matrix *m_sigmoid_prime(Matrix *m);
 Matrix *m_tanspose(Matrix *m);
 float m_sum(Matrix *m);
 Matrix *m_average(Matrix **list, int count);
+
+#endif
