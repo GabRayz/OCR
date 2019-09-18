@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "neuralnetwork.h"
 
 NeuralNetwork *nn_init(int *layerSizes, int layerCount)
@@ -98,4 +99,13 @@ void nn_feedForward(NeuralNetwork *nn)
 void nn_backProp(NeuralNetwork *nn)
 {
     // Compute the errors and each layer, then compute the gradient's component
+}
+
+double GaussianRand()
+{
+    double r1 = 1.0 - (double)rand() / RAND_MAX;
+    double r2 = 1.0 - (double)rand() / RAND_MAX;
+
+    double randStdNormal = sqrt(-2.0 * log(r1)) * sin(2.0 * M_PI * r2);
+    return randStdNormal;
 }

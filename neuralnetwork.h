@@ -28,3 +28,4 @@ void nn_SetUpRandom(NeuralNetwork *nn);
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels);
 void nn_feedForward(NeuralNetwork *nn);
 void nn_backProp(NeuralNetwork *nn);
+double GaussianRand();
