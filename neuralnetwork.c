@@ -6,18 +6,21 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
 {
     NeuralNetwork *nn = malloc(sizeof(NeuralNetwork));
     nn->layerCount = layerCount;
+
+    // Allocate the size of the Matrix arrays. One matrix per layer.
     nn->biaises = malloc(sizeof(Matrix *) * layerCount);
     nn->weights = malloc(sizeof(Matrix *) * layerCount);
     nn->activations = malloc(sizeof(Matrix *) * layerCount);
     nn->z = malloc(sizeof(Matrix *) * layerCount);
     nn->errors = malloc(sizeof(Matrix *) * layerCount);
-
+    // Allocate the size of a Matrix for the expected result of the last layer.
     nn->y = m_init(layerSizes[layerCount - 1], 1);
     
+    // Go through all layers to initialize the matrices.
     for (int l = 0; l < layerCount; l++)
     {
         nn->activations[l] = m_init(layerSizes[l], 1);
-        if (l != 0)
+        if (l != 0) // Initializing biaises, weights and errors for the first layer is useless
         {
             nn->biaises[l] = m_init(layerSizes[l], 1);
             nn->z[l] = m_init(layerSizes[l], 1);
@@ -40,6 +43,7 @@ void nn_delete(NeuralNetwork *nn)
 {
     for (int l = 0; l < nn->layerCount; l++)
     {
+        // Delete all matrices of the lists
         m_delete(nn->activations[l]);
         if (l != 0)
         {
@@ -50,6 +54,7 @@ void nn_delete(NeuralNetwork *nn)
         }
     }
     
+    // Delete all lists
     free(nn->biaises);
     free(nn->weights);
     free(nn->activations);
@@ -57,5 +62,5 @@ void nn_delete(NeuralNetwork *nn)
     free(nn->errors);
 
     free(nn->y);
-    free(nn);
+    free(nn); // Delete the struct
 }
