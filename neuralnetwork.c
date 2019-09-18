@@ -15,7 +15,7 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
     nn->errors = malloc(sizeof(Matrix *) * layerCount);
     // Allocate the size of a Matrix for the expected result of the last layer.
     nn->y = m_init(layerSizes[layerCount - 1], 1);
-    
+
     // Go through all layers to initialize the matrices.
     for (int l = 0; l < layerCount; l++)
     {
@@ -53,7 +53,7 @@ void nn_delete(NeuralNetwork *nn)
             m_delete(nn->weights[l]);
         }
     }
-    
+
     // Delete all lists
     free(nn->biaises);
     free(nn->weights);
@@ -63,4 +63,39 @@ void nn_delete(NeuralNetwork *nn)
 
     free(nn->y);
     free(nn); // Delete the struct
+}
+
+void nn_SetUpRandom(NeuralNetwork *nn)
+{
+    // Initialize all biaises and weights with random values (using Gaussian distribution)
+}
+
+void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
+{
+    // Set each neuron's value according to the pixels
+}
+
+void nn_compute(NeuralNetwork *nn, double *pixels, int label)
+{
+    /* 
+    params:
+        nn: Pointer to the Neural Network
+        pixels: Pointer to the array of doubles representing the values of image's pixels
+        label: The id of the expected output neuron
+
+    action:
+        Init the first layer (nn_initFirstLayer)
+        Set matrix y
+        Compute the activations on each layer (nn_feedForward)
+    */
+}
+
+void nn_feedForward(NeuralNetwork *nn)
+{
+    // Compute the activation on each layer
+}
+
+void nn_backProp(NeuralNetwork *nn)
+{
+    // Compute the errors and each layer, then compute the gradient's component
 }
