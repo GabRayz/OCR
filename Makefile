@@ -2,7 +2,7 @@ CC = gcc
 
 NAME = ocr
 
-SRCS = main.c matrix.c
+SRCS = main.c matrix.c neuralnetwork.c
 
 OBJS = $(SRCS:.c=.o)
 
