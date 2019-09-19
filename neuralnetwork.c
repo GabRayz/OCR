@@ -66,9 +66,22 @@ void nn_delete(NeuralNetwork *nn)
     free(nn); // Delete the struct
 }
 
-void nn_SetUpRandom(NeuralNetwork *nn)
+void nn_setupRandom(NeuralNetwork *nn)
 {
-    // Initialize all biaises and weights with random values (using Gaussian distribution)
+    // Initialize each biais and weights with random values
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        for (int i = 0; i < nn->biaises[l]->height; i++)
+        {
+            nn->biaises[l]->content[i][0] = GaussianRand();
+
+            for (int j = 0; j < nn->weights[l]->width; j++)
+            {
+                nn->weights[l]->content[i][j] = GaussianRand();
+            }
+        }
+    }
+    return 0;
 }
 
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
