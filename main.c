@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "matrix.h"
 #include "neuralnetwork.h"
+#include <ImageMagick-7/MagickWand/MagickWand.h>
 
 int main(/* int argc, char **argv */)
 {
@@ -9,5 +10,8 @@ int main(/* int argc, char **argv */)
     NeuralNetwork *nn = nn_init(sizes, 3);
     nn_setupRandom(nn);
     nn_delete(nn);
+
+    MagickWand *mw = NewMagickWand();
+    
     return 0;
 }

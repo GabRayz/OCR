@@ -4,8 +4,6 @@
 #include "matrix.h"
 #include "neuralnetwork.h"
 
-#define M_PI 3.14159265358979323846
-
 NeuralNetwork *nn_init(int *layerSizes, int layerCount)
 {
     NeuralNetwork *nn = malloc(sizeof(NeuralNetwork));
