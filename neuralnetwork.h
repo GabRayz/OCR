@@ -1,3 +1,6 @@
+#ifndef NEURALNETWORK_H
+# define NEURALNETWORK_H
+
 #include "matrix.h"
 
 typedef struct _NeuralNetwork {
@@ -30,3 +33,5 @@ void nn_initFirstLayer(NeuralNetwork *nn, double *pixels);
 void nn_feedForward(NeuralNetwork *nn);
 void nn_backProp(NeuralNetwork *nn);
 double GaussianRand();
+
+#endif
