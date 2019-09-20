@@ -17,6 +17,7 @@ typedef struct _NeuralNetwork {
     Matrix* y; // Y is the matrix of expected result of the output layer.
 
     Matrix** errors;
+    Matrix** dWeights;
 
 } NeuralNetwork;
 
@@ -24,7 +25,7 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount);
 void nn_delete(NeuralNetwork *nn);
 
 void nn_compute(NeuralNetwork *nn, double *pixels, int label);
-void nn_SetUpRandom(NeuralNetwork *nn);
+void nn_setupRandom(NeuralNetwork *nn);
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels);
 void nn_feedForward(NeuralNetwork *nn);
 void nn_backProp(NeuralNetwork *nn);

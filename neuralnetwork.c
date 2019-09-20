@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "matrix.h"
 #include "neuralnetwork.h"
 
 NeuralNetwork *nn_init(int *layerSizes, int layerCount)
@@ -14,6 +15,7 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
     nn->activations = malloc(sizeof(Matrix *) * layerCount);
     nn->z = malloc(sizeof(Matrix *) * layerCount);
     nn->errors = malloc(sizeof(Matrix *) * layerCount);
+    nn->dWeights = malloc(sizeof(Matrix *) * layerCount);
     // Allocate the size of a Matrix for the expected result of the last layer.
     nn->y = m_init(layerSizes[layerCount - 1], 1);
 
@@ -27,6 +29,7 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
             nn->z[l] = m_init(layerSizes[l], 1);
             nn->errors[l] = m_init(layerSizes[l], 1);
             nn->weights[l] = m_init(layerSizes[l], layerSizes[l - 1]);
+            nn->dWeights[l] = m_init(layerSizes[l], layerSizes[l - 1]);
         }
         else
         {
@@ -81,12 +84,15 @@ void nn_setupRandom(NeuralNetwork *nn)
             }
         }
     }
-    return 0;
 }
 
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
 {
     // Set each neuron's value according to the pixels
+    for (int j = 0; j < nn->activations[0]->height; j++)
+    {
+        nn->activations[0]->content[j][0] = pixels[j];
+    }
 }
 
 void nn_compute(NeuralNetwork *nn, double *pixels, int label)
@@ -102,16 +108,93 @@ void nn_compute(NeuralNetwork *nn, double *pixels, int label)
         Set matrix y
         Compute the activations on each layer (nn_feedForward)
     */
+
+    nn_initFirstLayer(nn, pixels);
+    m_delete(nn->y);
+
+    // Set the matrix of expected results
+    nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 0);
+    nn->y->content[label][0] = 1.0;
+
+    nn_feedForward(nn);
+    nn_backProp(nn);
 }
 
 void nn_feedForward(NeuralNetwork *nn)
 {
     // Compute the activation on each layer
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        // Free z and activation
+        m_delete(nn->z[l]);
+        m_delete(nn->activations[l]);
+
+        // Store the product m*a in a temporary matrix
+        Matrix *product = m_mult(nn->weights[l], nn->activations[l - 1]);
+        nn->z[l] = m_add(product, nn->biaises[l]);
+        nn->activations[l] = m_sigmoid(nn->z[l]);
+
+        // Free the temporary matrix
+        m_delete(product);
+    }
 }
 
 void nn_backProp(NeuralNetwork *nn)
 {
     // Compute the errors and each layer, then compute the gradient's component
+
+    // Free previous errors
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        m_delete(nn->errors[l]);
+        m_delete(nn->dWeights[l]);
+    }
+
+    // Compute the error on the output layer
+    Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
+    Matrix *zSigmoid = m_sigmoid(nn->z[nn->layerCount - 1]);
+    nn->errors[nn->layerCount - 1] = m_hadamard(costPrime, zSigmoid);
+
+    // Free temporary matrices
+    m_delete(costPrime);
+    m_delete(zSigmoid);
+
+    for (int l = nn->layerCount - 2; l > 0; l--)
+    {
+        // Compute intermediate matrices
+        Matrix *transposed = m_transpose(nn->weights[l + 1]);
+        Matrix *product = m_mult(transposed, nn->errors[l + 1]);
+        m_delete(transposed);
+        Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[l]);
+
+        // Compute the error
+        nn->errors[l] = m_hadamard(product, zSigmoidPrime);
+        m_delete(product);
+        m_delete(zSigmoidPrime);
+    }
+
+    // Compute the gradient's components
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        // nn->dBiaises[l] = nn->errors
+        for (int j = 0; j < nn->weights[l]->height; j++)
+        {
+            for (int i = 0; i < nn->weights[l]->width; i++)
+            {
+                // dC/dW = activation(previous layer) * error(current layer)
+                nn->dWeights[l]->content[j][i] = nn->activations[l - 1]->content[i][0] * nn->errors[l]->content[j][0];
+            }
+        }
+    }
+
+    // Apply modifiers
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        m_delete(nn->biaises[l]);
+        m_delete(nn->weights[l]);
+        nn->biaises[l] = m_sub(nn->biaises[l], nn->errors[l]);
+        nn->weights[l] = m_sub(nn->weights[l], nn->dWeights[l]);
+    }
 }
 
 double GaussianRand()

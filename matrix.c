@@ -48,6 +48,9 @@ Matrix *m_init_values(int height, int width, double *content)
 
 void m_delete(Matrix *m)
 {
+    if (m == NULL)
+        return;
+
     // Delete the matrix to free memory space
     for (int y = 0; y < m->height; y++)
     {
@@ -55,7 +58,7 @@ void m_delete(Matrix *m)
     }
 
     free(m->content); // Free the array of array
-    free(m); // Free the struct
+    free(m);          // Free the struct
 }
 
 void m_print(Matrix *m)
@@ -248,7 +251,7 @@ Matrix *m_sigmoid_prime(Matrix *m)
     return res;
 }
 
-Matrix *m_tanspose(Matrix *m)
+Matrix *m_transpose(Matrix *m)
 {
     // Transpose rows and colomns
 
@@ -281,7 +284,8 @@ float m_sum(Matrix *m)
 
 Matrix *m_average(Matrix **list, int count)
 {
-    if (count < 1) {
+    if (count < 1)
+    {
         printf("Matrix average: List must not be empty\n");
         exit(1);
     }
@@ -289,12 +293,13 @@ Matrix *m_average(Matrix **list, int count)
     int width = list[0]->width;
     for (int i = 0; i < count; i++)
     {
-        if(list[i]->height != height || list[i]->width != width) {
+        if (list[i]->height != height || list[i]->width != width)
+        {
             printf("Matrix average: All matrices of the list must have the same size");
             exit(2);
         }
     }
-    
+
     Matrix *res = m_init(list[0]->height, list[0]->width);
 
     for (int y = 0; y < list[0]->height; y++)
