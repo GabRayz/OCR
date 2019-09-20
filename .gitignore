@@ -1,3 +1,5 @@
 ocr
 *.o
 .vscode
+dataset
+.DS_Store
