@@ -16,12 +16,28 @@ char *concat(char *a, char *b)
     return res;
 }
 
-char **read_dataset(int dataCount)
+typedef struct Img
+{
+    char label;
+    double *pixels;
+    char *filepath;
+} Img;
+
+Img *img_init()
+{
+    Img *img = malloc(sizeof(Img));
+
+    img->filepath = malloc(sizeof(char *));
+    img->pixels = malloc(sizeof(double) * 784);
+    return img;
+}
+
+Img **read_dataset(int dataCount)
 {
     /* 
     Read the dataset/training directory to get images names
      */
-
+    Img **images = malloc(sizeof(Img *) * dataCount);
     char *prefix = "dataset/training/";
     char **files = malloc(sizeof(char *) * dataCount);
 
@@ -29,8 +45,8 @@ char **read_dataset(int dataCount)
     DIR *dataset = opendir("./dataset/training/");
     if (!dataset)
     {
-        files[0] = NULL;
-        return files;
+        images[0] = NULL;
+        return images;
     }
 
     // Skip self and parent directory
@@ -41,8 +57,11 @@ char **read_dataset(int dataCount)
     int i = 0;
     while ((dir = readdir(dataset)) != NULL && i < dataCount)
     {
-        // Store the file name in the array
-        files[i] = concat(prefix, dir->d_name);
+        // Store the file in the img
+        images[i] = img_init();
+        images[i]->filepath = concat(prefix, dir->d_name);
+        // strcpy(images[i]->label, dir->d_name[0]);
+        images[i]->label = dir->d_name[0];
         i++;
     }
 
@@ -50,25 +69,38 @@ char **read_dataset(int dataCount)
         files[i] = NULL;
 
     closedir(dataset);
-
-    return files;
+    return images;
 }
 
-void dataset_to_pixels(char *files[], int dataCount)
+void print_image(Img *image)
+{
+    for (int y = 0; y < 28; y++)
+    {
+        for (int x = 0; x < 28; x++)
+        {
+            printf("%d ", (int)image->pixels[y * 28 + x]);
+        }
+        printf("\n");
+    }
+}
+
+void dataset_to_pixels(Img **images, int dataCount)
 {
     MagickWand *mw = NewMagickWand();
 
-    for (int i = 0; i < dataCount && files[i]; i++)
+    for (int i = 0; i < dataCount && images[i]; i++)
     {
-        char *file = files[i];
-
-        printf("%s\n", file);
-
-        MagickReadImage(mw, file);
-        if (MagickReadImage(mw, file) == MagickTrue)
+        Img *image = images[i];
+        
+        if (MagickReadImage(mw, image->filepath) == MagickTrue)
+        {
             printf("File opened successfuly\n");
+            MagickExportImagePixels(mw, 0, 0, 28, 28, "R", DoublePixel, image->pixels);
+            
+            // print_image(image)
+        }
         else
-            printf("FAILED: %s\n", file);
+            printf("FAILED: %s\n", image->filepath);
     }
 
     DestroyMagickWand(mw);
@@ -76,9 +108,9 @@ void dataset_to_pixels(char *files[], int dataCount)
 
 int main(/* int argc, char **argv */)
 {
-    char **files = read_dataset(5);
+    Img **images = read_dataset(5);
 
-    dataset_to_pixels(files, 5);
+    dataset_to_pixels(images, 5);
 
     return 0;
 }
