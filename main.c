@@ -5,84 +5,80 @@
 #include "neuralnetwork.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 
-void read_dataset(char *files[], int dataCount)
+char *concat(char *a, char *b)
+{
+    int len = strlen(a) + strlen(b) + 1;
+    char *res = malloc(sizeof(char) * len);
+
+    strcpy(res, a);
+    strcat(res, b);
+
+    return res;
+}
+
+char **read_dataset(int dataCount)
 {
     /* 
     Read the dataset/training directory to get images names
      */
-    DIR *dataset;
+
+    char *prefix = "dataset/training/";
+    char **files = malloc(sizeof(char *) * dataCount);
+
     struct dirent *dir;
-    dataset = opendir("./dataset/training/");
-    if (dataset)
+    DIR *dataset = opendir("./dataset/training/");
+    if (!dataset)
     {
-        // For each file up to dataCount
-        int i = 0;
-        while ((dir = readdir(dataset)) != NULL && i < dataCount)
-        {
-            // Store the file name in the array
-            files[i] = dir->d_name;
-            i++;
-        }
-        closedir(dataset); 
+        files[0] = NULL;
+        return files;
     }
+
+    // Skip self and parent directory
+    readdir(dataset);
+    readdir(dataset);
+
+    // For each file up to dataCount
+    int i = 0;
+    while ((dir = readdir(dataset)) != NULL && i < dataCount)
+    {
+        // Store the file name in the array
+        files[i] = concat(prefix, dir->d_name);
+        i++;
+    }
+
+    if (i < dataCount)
+        files[i] = NULL;
+
+    closedir(dataset);
+
+    return files;
 }
 
-void dataset_to_pixels(char *files[], int dataCount) {
-    for (int i = 0; i < dataCount; i++)
+void dataset_to_pixels(char *files[], int dataCount)
+{
+    MagickWand *mw = NewMagickWand();
+
+    for (int i = 0; i < dataCount && files[i]; i++)
     {
-        //printf("%s\n", files[i]);
-        
-        char file[100];
-        strcpy(file, "dataset/training/");
-        strcat(file, files[i]);
+        char *file = files[i];
+
         printf("%s\n", file);
 
-        
-        MagickWand *wand = NewMagickWand();
-        // MagickReadImage(wand, file);
-        // if (MagickReadImage(wand, file) == MagickTrue) {
-        //     printf("File open successfuly\n");
-        // }else {
-        //     printf("Failed to open file: %s\n", file);
-        // }
-        // ClearMagickWand(wand);
-        DestroyMagickWand(wand);
+        MagickReadImage(mw, file);
+        if (MagickReadImage(mw, file) == MagickTrue)
+            printf("File opened successfuly\n");
+        else
+            printf("FAILED: %s\n", file);
     }
+
+    DestroyMagickWand(mw);
 }
 
 int main(/* int argc, char **argv */)
 {
-    printf("Hello World!\n");
-    int sizes[] = {5, 3, 2};
-    NeuralNetwork *nn = nn_init(sizes, 3);
-    nn_setupRandom(nn);
-    nn_delete(nn);
+    char **files = read_dataset(5);
 
-    // MagickWand *mw = NewMagickWand();
-    // MagickReadImage(mw, "dataset/training/a_AmericanTypewriter_-1-1.bmp");
-    // printf("%d\n", (int)MagickGetImageHeight(mw));
-
-    char* files[5];
-    read_dataset(files, 5);
-
-    FILE *input;
-    int get_char;
-    input = fopen("dataset/training/a_AmericanTypewriter_-1-1.bmp", "r");
-    // printf("%c\n", fgetc(input));
-    printf("Hey\n");
-    while((get_char=fgetc(input))!= EOF)
-    {
-        printf("%d", get_char);
-    }
-    fclose(input);
-
-    //dataset_to_pixels(files, 5);
-
-    // for (int i = 0; i < 5; i++)
-    // {
-    //     printf("%s\n", files[i]);
-    // }
-    
+    dataset_to_pixels(files, 5);
 
     return 0;
 }
