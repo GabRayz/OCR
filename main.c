@@ -108,6 +108,14 @@ void dataset_to_pixels(Img **images, int dataCount)
 
 int main(/* int argc, char **argv */)
 {
+    printf("%d\n", (int)'.'); // 46
+    printf("%c\n", 46 + '0'); // ^
+    for (int i = 0; i < 94; i++)
+    {
+        printf("%c", i - 15 + '0');
+    }
+    return 0;
+
     Img **images = read_dataset(5);
 
     dataset_to_pixels(images, 5);

@@ -120,6 +120,25 @@ void nn_compute(NeuralNetwork *nn, double *pixels, int label)
     nn_backProp(nn);
 }
 
+char nn_getResult(NeuralNetwork *nn)
+{
+    /* Return the output of the network */
+
+    // Get the maximum activation
+    int max_index = 0;
+    double max_value = 0;
+    for (int k = 0; k < nn->activations[nn->layerCount - 1]->height; k++)
+    {
+        if(nn->activations[nn->layerCount - 1]->content[k][0] > max_value) {
+            max_value = nn->activations[nn->layerCount - 1]->content[k][0];
+            max_index = k;
+        }
+    }
+    
+    // Cast the index of the neuron to the corresponding character
+    return (max_value - 15 + '0');
+}
+
 void nn_feedForward(NeuralNetwork *nn)
 {
     // Compute the activation on each layer
