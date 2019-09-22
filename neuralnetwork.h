@@ -34,6 +34,7 @@ void nn_feedForward(NeuralNetwork *nn);
 void nn_backProp(NeuralNetwork *nn);
 double GaussianRand();
 char nn_getResult(NeuralNetwork *nn);
+double nn_getCost(NeuralNetwork *nn);
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846

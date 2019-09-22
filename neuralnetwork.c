@@ -129,14 +129,29 @@ char nn_getResult(NeuralNetwork *nn)
     double max_value = 0;
     for (int k = 0; k < nn->activations[nn->layerCount - 1]->height; k++)
     {
-        if(nn->activations[nn->layerCount - 1]->content[k][0] > max_value) {
+        if (nn->activations[nn->layerCount - 1]->content[k][0] > max_value)
+        {
             max_value = nn->activations[nn->layerCount - 1]->content[k][0];
             max_index = k;
         }
     }
-    
+
     // Cast the index of the neuron to the corresponding character
     return (max_value - 15 + '0');
+}
+
+double nn_getCost(NeuralNetwork *nn)
+{
+    // Compute a - y
+    Matrix *sub = m_sub(nn->activations[nn->layerCount - 1], nn->y);
+    // Compute (a - y)^2
+    Matrix *hadamard = m_hadamard(sub, sub);
+    // Compute the sum
+    double cost = m_sum(hadamard);
+
+    m_delete(sub);
+    m_delete(hadamard);
+    return cost;
 }
 
 void nn_feedForward(NeuralNetwork *nn)
@@ -192,7 +207,7 @@ void nn_backProp(NeuralNetwork *nn)
         m_delete(product);
         m_delete(zSigmoidPrime);
     }
-    
+
     // Compute the gradient's components
     for (int l = 1; l < nn->layerCount; l++)
     {
@@ -206,7 +221,7 @@ void nn_backProp(NeuralNetwork *nn)
             }
         }
     }
-    
+
     // Apply modifiers
     for (int l = 1; l < nn->layerCount; l++)
     {
