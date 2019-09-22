@@ -113,7 +113,7 @@ void nn_compute(NeuralNetwork *nn, double *pixels, int label)
     m_delete(nn->y);
 
     // Set the matrix of expected results
-    nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 0);
+    nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 1);
     nn->y->content[label][0] = 1.0;
 
     nn_feedForward(nn);
@@ -167,6 +167,7 @@ void nn_backProp(NeuralNetwork *nn)
     {
         m_delete(nn->errors[l]);
         m_delete(nn->dWeights[l]);
+        nn->dWeights[l] = m_init(nn->weights[l]->height, nn->weights[l]->width);
     }
 
     // Compute the error on the output layer
@@ -191,7 +192,7 @@ void nn_backProp(NeuralNetwork *nn)
         m_delete(product);
         m_delete(zSigmoidPrime);
     }
-
+    
     // Compute the gradient's components
     for (int l = 1; l < nn->layerCount; l++)
     {
@@ -200,17 +201,15 @@ void nn_backProp(NeuralNetwork *nn)
         {
             for (int i = 0; i < nn->weights[l]->width; i++)
             {
-                // dC/dW = activation(previous layer) * error(current layer)
+                // dC/dW = activation(previous layer) * error(current layer
                 nn->dWeights[l]->content[j][i] = nn->activations[l - 1]->content[i][0] * nn->errors[l]->content[j][0];
             }
         }
     }
-
+    
     // Apply modifiers
     for (int l = 1; l < nn->layerCount; l++)
     {
-        m_delete(nn->biaises[l]);
-        m_delete(nn->weights[l]);
         nn->biaises[l] = m_sub(nn->biaises[l], nn->errors[l]);
         nn->weights[l] = m_sub(nn->weights[l], nn->dWeights[l]);
     }
