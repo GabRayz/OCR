@@ -106,6 +106,8 @@ void dataset_to_pixels(Img **images, int dataCount)
     DestroyMagickWand(mw);
 }
 
+#define COUNT 36
+
 void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 {
     /* 
@@ -115,8 +117,10 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 
     for (int i = 0; i < cycles; i++)
     {
-        Img *img = images[i % 10];
+        Img *img = images[i % COUNT];
+
         nn_compute(nn, img->pixels, (int)img->label);
+
         if (learn)
             nn_backProp(nn);
         //    printf("Result : %c, Label : %c, cost : %lf\n", nn_getResult(nn), img->label, nn_getCost(nn));
@@ -134,14 +138,14 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 
 int main(/* int argc, char **argv */)
 {
-    int cycles = 60000;
-    Img **images = read_dataset(10);
-    dataset_to_pixels(images, 10);
-    // printf("%lf\n", images[0]->pixels[0]);
+    int cycles = 10000;
+    Img **images = read_dataset(COUNT);
+    dataset_to_pixels(images, COUNT);
 
-    int layerSizes[] = {784, 16, 93};
+    int layerSizes[] = {784, 20, 93};
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
+
     train(nn, images, cycles, 1);
     train(nn, images, cycles, 0);
     return 0;

@@ -108,16 +108,16 @@ void nn_compute(NeuralNetwork *nn, double *pixels, int label)
         Set matrix y
         Compute the activations on each layer (nn_feedForward)
     */
-
+   
     nn_initFirstLayer(nn, pixels);
+    
     m_delete(nn->y);
 
     // Set the matrix of expected results
     nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 1);
     nn->y->content[label - 33][0] = 1.0;
-
+    
     nn_feedForward(nn);
-    // nn_backProp(nn);
 }
 
 char nn_getResult(NeuralNetwork *nn)
@@ -183,9 +183,8 @@ void nn_backProp(NeuralNetwork *nn)
     {
         m_delete(nn->errors[l]);
         m_delete(nn->dWeights[l]);
-        nn->dWeights[l] = m_init(nn->weights[l]->height, nn->weights[l]->width);
     }
-
+    
     // Compute the error on the output layer
     Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
     Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
@@ -201,17 +200,17 @@ void nn_backProp(NeuralNetwork *nn)
         Matrix *transposed = m_transpose(nn->weights[l + 1]);
         Matrix *product = m_mult(transposed, nn->errors[l + 1]);
         m_delete(transposed);
-        Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[l]);
+        zSigmoidPrime = m_sigmoid_prime(nn->z[l]);
 
         // Compute the error
         nn->errors[l] = m_hadamard(product, zSigmoidPrime);
         m_delete(product);
         m_delete(zSigmoidPrime);
     }
-
     // Compute the gradient's components
     for (int l = 1; l < nn->layerCount; l++)
     {
+        nn->dWeights[l] = m_init(nn->weights[l]->height, nn->weights[l]->width);
         // nn->dBiaises[l] = nn->errors
         for (int j = 0; j < nn->weights[l]->height; j++)
         {
