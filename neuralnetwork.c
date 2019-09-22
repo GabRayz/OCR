@@ -114,10 +114,10 @@ void nn_compute(NeuralNetwork *nn, double *pixels, int label)
 
     // Set the matrix of expected results
     nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 1);
-    nn->y->content[label][0] = 1.0;
+    nn->y->content[label - 33][0] = 1.0;
 
     nn_feedForward(nn);
-    nn_backProp(nn);
+    // nn_backProp(nn);
 }
 
 char nn_getResult(NeuralNetwork *nn)
@@ -127,17 +127,18 @@ char nn_getResult(NeuralNetwork *nn)
     // Get the maximum activation
     int max_index = 0;
     double max_value = 0;
-    for (int k = 0; k < nn->activations[nn->layerCount - 1]->height; k++)
+    Matrix *result = nn->activations[nn->layerCount - 1];
+    for (int k = 0; k < result->height; k++)
     {
-        if (nn->activations[nn->layerCount - 1]->content[k][0] > max_value)
+        if (result->content[k][0] > max_value)
         {
-            max_value = nn->activations[nn->layerCount - 1]->content[k][0];
+            max_value = result->content[k][0];
             max_index = k;
         }
     }
 
     // Cast the index of the neuron to the corresponding character
-    return (max_value - 15 + '0');
+    return max_index + 33;
 }
 
 double nn_getCost(NeuralNetwork *nn)
@@ -187,12 +188,12 @@ void nn_backProp(NeuralNetwork *nn)
 
     // Compute the error on the output layer
     Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
-    Matrix *zSigmoid = m_sigmoid(nn->z[nn->layerCount - 1]);
-    nn->errors[nn->layerCount - 1] = m_hadamard(costPrime, zSigmoid);
+    Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
+    nn->errors[nn->layerCount - 1] = m_hadamard(costPrime, zSigmoidPrime);
 
     // Free temporary matrices
     m_delete(costPrime);
-    m_delete(zSigmoid);
+    m_delete(zSigmoidPrime);
 
     for (int l = nn->layerCount - 2; l > 0; l--)
     {

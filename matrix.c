@@ -231,7 +231,7 @@ Matrix *m_sigmoid(Matrix *m)
     {
         for (int x = 0; x < m->width; x++)
         {
-            res->content[y][x] = sigmoid(res->content[y][x]);
+            res->content[y][x] = sigmoid(m->content[y][x]);
         }
     }
     return res;

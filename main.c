@@ -16,7 +16,7 @@ char *concat(char *a, char *b)
     return res;
 }
 
-typedef struct Img
+typedef struct _Img
 {
     char label;
     double *pixels;
@@ -38,11 +38,11 @@ Img **read_dataset(int dataCount)
     Read the dataset/training directory to get images names
      */
     Img **images = malloc(sizeof(Img *) * dataCount);
-    char *prefix = "dataset/training/";
+    char *prefix = "dataset/easy/";
     char **files = malloc(sizeof(char *) * dataCount);
 
     struct dirent *dir;
-    DIR *dataset = opendir("./dataset/training/");
+    DIR *dataset = opendir("./dataset/easy/");
     if (!dataset)
     {
         images[0] = NULL;
@@ -91,13 +91,13 @@ void dataset_to_pixels(Img **images, int dataCount)
     for (int i = 0; i < dataCount && images[i]; i++)
     {
         Img *image = images[i];
-        
+
         if (MagickReadImage(mw, image->filepath) == MagickTrue)
         {
-            printf("File opened successfuly\n");
+            // printf("File opened successfuly\n");
             MagickExportImagePixels(mw, 0, 0, 28, 28, "R", DoublePixel, image->pixels);
-            
-            // print_image(image)
+
+            //print_image(image);
         }
         else
             printf("FAILED: %s\n", image->filepath);
@@ -106,19 +106,43 @@ void dataset_to_pixels(Img **images, int dataCount)
     DestroyMagickWand(mw);
 }
 
+void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
+{
+    /* 
+    Train the neural network with the given set of images
+    */
+    double *results = malloc(sizeof(double) * cycles);
+
+    for (int i = 0; i < cycles; i++)
+    {
+        Img *img = images[i % 10];
+        nn_compute(nn, img->pixels, (int)img->label);
+        if (learn)
+            nn_backProp(nn);
+        //    printf("Result : %c, Label : %c, cost : %lf\n", nn_getResult(nn), img->label, nn_getCost(nn));
+        results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
+    }
+
+    double sum = 0;
+    for (int i = 0; i < cycles; i++)
+    {
+        sum += results[i];
+    }
+
+    printf("Accuracy : %lf\n", (sum / cycles) * 100);
+}
+
 int main(/* int argc, char **argv */)
 {
-    printf("%d\n", (int)'.'); // 46
-    printf("%c\n", 46 + '0'); // ^
-    for (int i = 0; i < 94; i++)
-    {
-        printf("%c", i - 15 + '0');
-    }
-    return 0;
+    int cycles = 60000;
+    Img **images = read_dataset(10);
+    dataset_to_pixels(images, 10);
+    // printf("%lf\n", images[0]->pixels[0]);
 
-    Img **images = read_dataset(5);
-
-    dataset_to_pixels(images, 5);
-
+    int layerSizes[] = {784, 16, 93};
+    NeuralNetwork *nn = nn_init(layerSizes, 3);
+    nn_setupRandom(nn);
+    train(nn, images, cycles, 1);
+    train(nn, images, cycles, 0);
     return 0;
 }
