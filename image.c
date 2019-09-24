@@ -53,3 +53,18 @@ double *img_grayscale(double *pixels, int size)
     }
     return grayscale;
 }
+
+void img_save(double *pixels, int width, int height, char *filepath)
+{
+    MagickWand *wand = NewMagickWand();
+    // MagickReadImage(wand, filepath);
+    // MagickWriteImage(wand, "res.png");
+    if (MagickImportImagePixels(wand, 0, 0, width, height, "R", DoublePixel, pixels) == MagickFalse) {
+        printf("Success\n");
+        MagickWriteImage(wand, filepath);
+    }else {
+        printf("Failure :c\n");
+    }
+    
+    
+}

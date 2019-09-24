@@ -139,7 +139,8 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 
 int main(/* int argc, char **argv */)
 {
-    img_import("test2.png");
+    double* img = img_import("test2.png");
+    img_save(img, 3, 2, "res.png");
     return 0;
 
     // int cycles = 10000;
