@@ -2,6 +2,7 @@
 #include <string.h>
 #include <dirent.h>
 #include "matrix.h"
+#include "image.h"
 #include "neuralnetwork.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 
@@ -138,15 +139,18 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 
 int main(/* int argc, char **argv */)
 {
-    int cycles = 10000;
-    Img **images = read_dataset(COUNT);
-    dataset_to_pixels(images, COUNT);
-
-    int layerSizes[] = {784, 20, 93};
-    NeuralNetwork *nn = nn_init(layerSizes, 3);
-    nn_setupRandom(nn);
-
-    train(nn, images, cycles, 1);
-    train(nn, images, cycles, 0);
+    img_import("test2.png");
     return 0;
+
+    // int cycles = 10000;
+    // Img **images = read_dataset(COUNT);
+    // dataset_to_pixels(images, COUNT);
+
+    // int layerSizes[] = {784, 20, 93};
+    // NeuralNetwork *nn = nn_init(layerSizes, 3);
+    // nn_setupRandom(nn);
+
+    // train(nn, images, cycles, 1);
+    // train(nn, images, cycles, 0);
+    // return 0;
 }
