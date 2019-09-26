@@ -53,9 +53,8 @@ void img_save(double *pixels, int width, int height, char *filepath)
 {
     MagickWand *wand = NewMagickWand();
     PixelWand *pixel = NewPixelWand();
-    PixelSetColor(pixel, "000");
+    MagickNewImage(wand, width, height, pixel);
     ClearPixelWand(pixel);
-    MagickNewImage(wand, width, height, NewPixelWand());
     if (MagickImportImagePixels(wand, 0, 0, width, height, "I", DoublePixel, pixels) == MagickTrue)
     {
         printf("Success\n");
