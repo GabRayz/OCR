@@ -17,22 +17,6 @@ char *concat(char *a, char *b)
     return res;
 }
 
-typedef struct _Img
-{
-    char label;
-    double *pixels;
-    char *filepath;
-} Img;
-
-Img *img_init()
-{
-    Img *img = malloc(sizeof(Img));
-
-    img->filepath = malloc(sizeof(char *));
-    img->pixels = malloc(sizeof(double) * 784);
-    return img;
-}
-
 Img **read_dataset(int dataCount)
 {
     /* 
@@ -140,8 +124,8 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 int main(/* int argc, char **argv */)
 {
     MagickWandGenesis();
-    double* img = img_import("test2.png");
-    img_save(img, 3, 2, "res.png");
+    Img* img = img_import("dataset/images/test.png");
+    img_save(img->pixels, img->width, img->height, "res.png");
     return 0;
 
     // int cycles = 10000;

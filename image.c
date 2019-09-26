@@ -1,7 +1,16 @@
 #include "image.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 
-double *img_import(char *filepath)
+Img *img_init()
+{
+    Img *img = malloc(sizeof(Img));
+
+    img->filepath = malloc(sizeof(char *));
+    img->pixels = malloc(sizeof(double) * 784);
+    return img;
+}
+
+Img *img_import(char *filepath)
 {
     /* Take the path of the image file. Returns the pixel array in black & white */
     MagickWand *wand = NewMagickWand();
@@ -15,7 +24,15 @@ double *img_import(char *filepath)
     MagickExportImagePixels(wand, 0, 0, width, height, "RGB", DoublePixel, pixels);
     // Convert into grayscale
     double *image = img_grayscale(pixels, width * height * 3);
-    return image;
+
+    //
+    Img *res = img_init();
+    res->pixels = image;
+    res->filepath = filepath;
+    res->width = width;
+    res->height = height;
+
+    return res;
 }
 
 void img_print(double *pixels, int width, int height)
@@ -41,7 +58,7 @@ double *img_grayscale(double *pixels, int size)
     }
 
     // Convert into black & white
-    float threshold = 0.8;
+    float threshold = 0.7;
     for (int i = 0; i < size / 3; i++)
     {
         grayscale[i] = (grayscale[i] < threshold) ? 0 : 1;
