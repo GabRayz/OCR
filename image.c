@@ -10,10 +10,7 @@ double *img_import(char *filepath)
     int width = MagickGetImageWidth(wand);
     // Initialize the pixel array. Each pixel is represented by 3 doubles (RGB)
     double *pixels = malloc(sizeof(double) * width * height * 3);
-    for (int i = 0; i < width * height * 3; i++)
-    {
-        pixels[i] = 0.0;
-    }
+
     // Export pixels from coordinates (0,0) in RGB order. Store in pixels
     MagickExportImagePixels(wand, 0, 0, width, height, "RGB", DoublePixel, pixels);
     // Convert into grayscale
@@ -37,12 +34,10 @@ double *img_grayscale(double *pixels, int size)
 {
     // Convert into grayscale
     double *grayscale = malloc(sizeof(double) * size / 3);
-    int k = 0;
-    for (int i = 0; i < size; i = i + 3)
+    for (int i = 0; i < size / 3; i++)
     {
         // Grayscale formula
-        grayscale[k] = (0.3 * pixels[i]) + (0.59 * pixels[i + 1]) + (0.11 * pixels[i + 2]);
-        k++;
+        grayscale[i] = (0.3 * pixels[i * 3]) + (0.59 * pixels[i * 3 + 1]) + (0.11 * pixels[i * 3 + 2]);
     }
 
     // Convert into black & white
@@ -57,20 +52,30 @@ double *img_grayscale(double *pixels, int size)
 void img_save(double *pixels, int width, int height, char *filepath)
 {
     MagickWand *wand = NewMagickWand();
-    MagickReadImage(wand, filepath);
-    MagickWriteImage(wand, "res.png");
-    if (MagickImportImagePixels(wand, 0, 0, width, height, "I", DoublePixel, pixels) == MagickFalse)
+    PixelWand *pixel = NewPixelWand();
+    PixelSetColor(pixel, "000");
+    ClearPixelWand(pixel);
+    MagickNewImage(wand, width, height, NewPixelWand());
+    if (MagickImportImagePixels(wand, 0, 0, width, height, "I", DoublePixel, pixels) == MagickTrue)
     {
         printf("Success\n");
-        
-        if(MagickWriteImage(wand, filepath) == MagickFalse) {
+
+        if (MagickWriteImage(wand, filepath) == MagickTrue)
+        {
             printf("Success\n");
-        }else {
+        }
+        else
+        {
             printf("Failure :c\n");
+            ExceptionType type = MagickGetExceptionType(wand);
+            printf("%s\n", MagickGetException(wand, &type));
         }
     }
     else
     {
         printf("Failure :c\n");
+        ExceptionType type = MagickGetExceptionType(wand);
+        printf("%s\n", MagickGetException(wand, &type));
     }
+    ClearMagickWand(wand);
 }
