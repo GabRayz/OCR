@@ -158,17 +158,52 @@ void block_split_vertical(Img *image, Block *block, Block *res1, Block *res2)
     res2->height = block->height;
 }
 
-// void block_split_horizontal(Img *image, Block *block, Block *left, Block *right)
-// {
-//     remove_white_margin(image, block);
-//     int y = block->y;
-//     // Go through rows until finding a white one
-//     while (/* condition */)
-//     {
-//         /* code */
-//     }
-    
-// }
+void block_split_horizontal(Img *image, Block *block, Block *top, Block *bottom)
+{
+    remove_white_margin(image, block);
+    int y = block->y;
+
+    int blackHeight = 0;
+    int whiteHeight = 0;
+    int current = 0;
+    // If there are more white lines than previous black lines, split
+    while (whiteHeight <= blackHeight && y < block->y + block->height)
+    {
+        double rate = horizontal_white_rate(image, block, y);
+        // If the line is black
+        if (rate < threshold)
+        {
+            blackHeight++;
+            // If the last line was white
+            if (current == 1)
+            {
+                whiteHeight = 0;
+                blackHeight = 1;
+            }
+            current = 0;
+        } // If the line is white
+        else if (blackHeight > 5)
+        {
+            whiteHeight++;
+            current = 1;
+        }
+
+        y++;
+    }
+    // Remove last white lines
+    y -= whiteHeight;
+    // Split
+    top->y = block->y;
+    top->height = y - block->y;
+    bottom->y = y;
+    bottom->height = block->height - y;
+
+    //
+    top->x = block->x;
+    top->width = block->width;
+    bottom->x = block->x;
+    bottom->width = block->width;
+}
 
 // Img resize(Img *image)
 // {

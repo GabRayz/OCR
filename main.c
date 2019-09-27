@@ -4,6 +4,7 @@
 #include "matrix.h"
 #include "image.h"
 #include "neuralnetwork.h"
+#include "separation.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 
 char *concat(char *a, char *b)
@@ -124,8 +125,20 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 int main(/* int argc, char **argv */)
 {
     MagickWandGenesis();
-    Img* img = img_import("dataset/images/test.png");
-    img_save(img->pixels, img->width, img->height, "res.png");
+    Img* img = img_import("dataset/images/paragraphes.jpeg");
+    Block *block = img_make_block(img);
+    
+    Block *left = block_init();
+    Block *right = block_init();
+    block_split_vertical(img, block, left, right);
+
+    Block *top = block_init();
+    Block *bottom = block_init();
+    block_split_horizontal(img, left, top, bottom);
+
+    Img *res = img_from_block(img, top);
+    img_save(res->pixels, res->width, res->height, "res.png");
+    //img_save(img->pixels, img->width, img->height, "res.png");
     return 0;
 
     // int cycles = 10000;
