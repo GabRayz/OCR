@@ -1,13 +1,21 @@
 #include "image.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 
-Img *img_init()
+Img *img_init(int width, int height)
 {
     Img *img = malloc(sizeof(Img));
 
     img->filepath = malloc(sizeof(char *));
-    img->pixels = malloc(sizeof(double) * 784);
+    img->pixels = malloc(sizeof(double) * width * height);
+    img->width = width;
+    img->height = height;
     return img;
+}
+
+void img_delete(Img *image) {
+    free(image->pixels);
+    free(image->filepath);
+    free(image);
 }
 
 Img *img_import(char *filepath)
@@ -26,11 +34,9 @@ Img *img_import(char *filepath)
     double *image = img_grayscale(pixels, width * height * 3);
 
     //
-    Img *res = img_init();
+    Img *res = img_init(width, height);
     res->pixels = image;
     res->filepath = filepath;
-    res->width = width;
-    res->height = height;
 
     return res;
 }

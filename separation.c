@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "image.h"
 #include "separation.h"
 
@@ -13,54 +14,73 @@ void block_delete(Block *block)
     free(block);
 }
 
+Block *img_make_block(Img *image)
+{
+    Block *block = block_init();
+    block->x = 0;
+    block->y = 0;
+    block->width = image->width;
+    block->height = image->height;
+    return block;
+}
+
+Img *img_from_block(Img *source, Block *block)
+{
+    Img *res = img_init(block->width, block->height);
+    for (int y = 0; y < block->height; y++)
+    {
+        for (int x = 0; x < block->width; x++)
+        {
+            res->pixels[y * block->width + x] = source->pixels[(block->y + y) * source->width + block->x + x];
+        }
+    }
+    return res;
+}
+
 void remove_white_margin(Img *image, Block *block)
 {
+    double threshold = 0.9999;
+
     // Remove left margin
     int x = block->x;
     // While the Xth column is white
-    while (vertical_white_rate(image, block, x) > 0.95)
-    {
+    while (vertical_white_rate(image, block, x) > threshold && x < block->x + block->width)
         x++;
-    }
-
     // If the entire block is white, delete it
-    if (x == block->width)
+    if (x == block->x + block->width)
     {
         block_delete(block);
-    }
-    else
-    {
-        // Resize the block to exclude the left margin
-        block->width -= x - block->x;
-        block->x = x;
+        return;
     }
 
+    // Resize the block to exclude the left margin
+    block->width = block->width - (x - block->x);
+    block->x = x;
+
     // Remove right margin
-    x = block->x + block->width;
+    x = block->x + block->width - 1;
     // While the Xth column is white
-    while (vertical_white_rate(image, block, x) > 0.95)
-    {
+    while (vertical_white_rate(image, block, x) > threshold && x > 0)
         x--;
-    }
+
     // Resize
-    block->width -= block->x + block->width - x;
+    block->width = x - block->x;
 
     // Remove top margin
     int y = block->y;
-    while (horizontal_white_rate(image, block, y) > 0.95)
-    {
+    while (horizontal_white_rate(image, block, y) > threshold && y < block->y + block->height)
         y++;
-    }
-    block->height -= y - block->y;
+    block->height = block->height - (y - block->y);
     block->y = y;
 
     // Remove bottom margin
-    y = block->y + block->height;
-    while (horizontal_white_rate(image, block, y) > 0.95)
+    y = block->y + block->height - 1;
+    while (horizontal_white_rate(image, block, y) > threshold && y > 0)
     {
         y--;
     }
-    block->height -= block->y + block->height - y;
+
+    block->height = y - block->y;
 }
 
 double vertical_white_rate(Img *image, Block *block, int x)
@@ -70,7 +90,7 @@ double vertical_white_rate(Img *image, Block *block, int x)
     for (int y = 0; y < block->height; y++)
     {
         // Get the coordinate of the pixel in the entire image
-        int pixelIndex = (block->y + y) * image->width + (block->x + x);
+        int pixelIndex = (block->y + y) * image->width + x;
         rate += image->pixels[pixelIndex];
     }
     // Average rate of white
@@ -84,12 +104,12 @@ double horizontal_white_rate(Img *image, Block *block, int y)
     double rate = 0.0;
     for (int x = 0; x < block->width; x++)
     {
-        int pixelIndex = (block->y + y) * image->width + (block->x + x);
+        int pixelIndex = y * image->width + (block->x + x);
         rate += image->pixels[pixelIndex];
     }
 
     // Average rate of white
-    rate /= block->height;
+    rate /= block->width;
     return rate;
 }
 
