@@ -37,50 +37,66 @@ Img *img_from_block(Img *source, Block *block)
     return res;
 }
 
-void remove_white_margin(Img *image, Block *block)
+double threshold = 0.9999;
+
+void remove_white_margin(Img *img, Block *block)
 {
-    double threshold = 0.9999;
+    remove_top_margin(img, block);
+    remove_bottom_margin(img, block);
+    remove_left_margin(img, block);
+    remove_right_margin(img, block);
+}
 
-    // Remove left margin
-    int x = block->x;
-    // While the Xth column is white
-    while (vertical_white_rate(image, block, x) > threshold && x < block->x + block->width)
-        x++;
-    // If the entire block is white, delete it
-    if (x == block->x + block->width)
-    {
-        block_delete(block);
-        return;
-    }
-
-    // Resize the block to exclude the left margin
-    block->width = block->width - (x - block->x);
-    block->x = x;
-
-    // Remove right margin
-    x = block->x + block->width - 1;
-    // While the Xth column is white
-    while (vertical_white_rate(image, block, x) > threshold && x > 0)
-        x--;
-
-    // Resize
-    block->width = x - block->x;
-
+Block *remove_top_margin(Img *img, Block *block)
+{
     // Remove top margin
     int y = block->y;
-    while (horizontal_white_rate(image, block, y) > threshold && y < block->y + block->height)
+    while (horizontal_white_rate(img, block, y) > threshold && y < block->y + block->height)
         y++;
+
     block->height = block->height - (y - block->y);
     block->y = y;
 
+    return block;
+}
+
+Block *remove_bottom_margin(Img *img, Block *block)
+{
     // Remove bottom margin
-    y = block->y + block->height - 1;
-    while (horizontal_white_rate(image, block, y) > threshold && y > 0)
-    {
+    int y = block->y + block->height - 1;
+    while (horizontal_white_rate(img, block, y) > threshold && y > 0)
         y--;
-    }
 
     block->height = y - block->y;
+
+    return block;
+}
+
+Block *remove_left_margin(Img *img, Block *block)
+{
+    // Remove left margin
+    int x = block->x;
+    // While the Xth column is white
+    while (vertical_white_rate(img, block, x) > threshold && x < block->x + block->width)
+        x++;
+
+    block->width = block->width - (x - block->x);
+    block->x = x;
+
+    return block;
+}
+
+Block *remove_right_margin(Img *img, Block *block)
+{
+    // Remove right margin
+    int x = block->x + block->width - 1;
+    // While the Xth column is white
+    while (vertical_white_rate(img, block, x) > threshold && x > 0)
+        x--;
+
+    block->width = x - block->x;
+
+    return block;
 }
 
 double vertical_white_rate(Img *image, Block *block, int x)
@@ -113,37 +129,78 @@ double horizontal_white_rate(Img *image, Block *block, int y)
     return rate;
 }
 
-Img resize(Img *image)
+void block_split_vertical(Img *image, Block *block, Block *res1, Block *res2)
 {
-    int height = image->height;
-    int width = image->width;
-    int size = 28;
-    double fx = width / size * 0.9999;
-    double fy = height / height * 0.9999;
-    double fix = 1 / fx;
-    double fiy = 1 / fy;
-    double sy1;
-    double sy2;
-    double sx1 = size * fx;
-    double sx2 = sx1 + fx;
-    double *res = malloc(sizeof(double) * size);
-
-    //Check if the character is too big
-    if (fx < 1 || fy < 1)
+    // Remove margins
+    remove_white_margin(image, block);
+    int x = block->x;
+    // Go through columns until finding a white column
+    while (vertical_white_rate(image, block, x) < threshold && x < block->x + block->width)
     {
-        for (int y = 0; y < size; y++)
-        {
-            sy1 = size * fy;
-            sy2 = sy1 + fy;
-            //Calculate sy1, sy2, jstart, jend, devY1, devY2.
-            for (int x = 0; x < size; x++)
-            {
-                /* code */
-            }
-        }
+        x++;
     }
-    //Check if the character is too small
-    else
-    { //if(fx > 1 || fy>1)
+    if (x == block->x + block->width)
+    {
+        block_delete(res1);
+        block_delete(res2);
+        return;
     }
+    // Cut the image
+    res1->x = block->x;
+    res1->width = x - block->x;
+    res2->x = x;
+    res2->width = block->width - x;
+
+    //
+    res1->y = block->y;
+    res1->height = block->height;
+    res2->y = block->y;
+    res2->height = block->height;
 }
+
+// void block_split_horizontal(Img *image, Block *block, Block *left, Block *right)
+// {
+//     remove_white_margin(image, block);
+//     int y = block->y;
+//     // Go through rows until finding a white one
+//     while (/* condition */)
+//     {
+//         /* code */
+//     }
+    
+// }
+
+// Img resize(Img *image)
+// {
+//     int height = image->height;
+//     int width = image->width;
+//     int size = 28;
+//     double fx = width / size * 0.9999;
+//     double fy = height / height * 0.9999;
+//     double fix = 1 / fx;
+//     double fiy = 1 / fy;
+//     double sy1;
+//     double sy2;
+//     double sx1 = size * fx;
+//     double sx2 = sx1 + fx;
+//     double *res = malloc(sizeof(double) * size);
+
+//     //Check if the character is too big
+//     if (fx < 1 || fy < 1)
+//     {
+//         for (int y = 0; y < size; y++)
+//         {
+//             sy1 = size * fy;
+//             sy2 = sy1 + fy;
+//             //Calculate sy1, sy2, jstart, jend, devY1, devY2.
+//             for (int x = 0; x < size; x++)
+//             {
+//                 /* code */
+//             }
+//         }
+//     }
+//     //Check if the character is too small
+//     else
+//     { //if(fx > 1 || fy>1)
+//     }
+// }
