@@ -1,14 +1,27 @@
 #ifndef SEPARATION_H
 
-# define SEPARATION_H
+#define SEPARATION_H
+#include <stdbool.h>
 #include "image.h"
 
-typedef struct _Block {
+typedef struct _Block
+{
     int x;
     int y;
     int width;
     int height;
 } Block;
+
+typedef struct _Node
+{
+    Block *block;
+    Node *next;
+} Node;
+
+typedef struct _LinkedList {
+    Node *start;
+    Node *end;
+} LinkedList;
 
 Block *block_init();
 void block_delete(Block *block);

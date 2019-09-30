@@ -5,6 +5,10 @@
 Block *block_init()
 {
     Block *block = malloc(sizeof(Block));
+    block->x = 0;
+    block->y = 0;
+    block->width = 0;
+    block->height = 0;
 
     return block;
 }
@@ -12,6 +16,34 @@ Block *block_init()
 void block_delete(Block *block)
 {
     free(block);
+}
+
+Node *node_init()
+{
+    Node *node = malloc(sizeof(Node));
+    node->block = NULL;
+    node->next = NULL;
+
+    return node;
+}
+
+void node_free(Node *list)
+{
+    free(list);
+}
+
+LinkedList *list_init()
+{
+    LinkedList *list = malloc(sizeof(LinkedList));
+    list->start = NULL;
+    list->end = NULL;
+
+    return list;
+}
+
+void list_free(LinkedList *list)
+{
+    free(list);
 }
 
 Block *img_make_block(Img *image)
@@ -165,9 +197,9 @@ void block_split_horizontal(Img *image, Block *block, Block *top, Block *bottom)
 
     int blackHeight = 0;
     int whiteHeight = 0;
-    int current = 0;
+    int currentColor = 0;
     // If there are more white lines than previous black lines, split
-    while (whiteHeight <= blackHeight && y < block->y + block->height)
+    while (whiteHeight <= blackHeight * 1.5 && y < block->y + block->height)
     {
         double rate = horizontal_white_rate(image, block, y);
         // If the line is black
@@ -175,17 +207,17 @@ void block_split_horizontal(Img *image, Block *block, Block *top, Block *bottom)
         {
             blackHeight++;
             // If the last line was white
-            if (current == 1)
+            if (currentColor == 1)
             {
                 whiteHeight = 0;
                 blackHeight = 1;
             }
-            current = 0;
+            currentColor = 0;
         } // If the line is white
         else if (blackHeight > 5)
         {
             whiteHeight++;
-            current = 1;
+            currentColor = 1;
         }
 
         y++;

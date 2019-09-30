@@ -17,15 +17,11 @@ Matrix *m_init(int height, int width)
     Matrix *m = malloc(sizeof(Matrix));
     m->height = height;
     m->width = width;
-    m->content = malloc(sizeof(double *) * height); // Size of an array of float, height times
+    m->content = calloc(height, sizeof(double *)); // Size of an array of float, height times
 
     for (int y = 0; y < height; y++)
     {
-        m->content[y] = malloc(sizeof(double) * width); // Allocate the size of float, width times
-        for (int x = 0; x < width; x++)
-        {
-            m->content[y][x] = 0; // Set all values to 0
-        }
+        m->content[y] = calloc(width, sizeof(double)); // Allocate the size of float, width times
     }
 
     return m;
