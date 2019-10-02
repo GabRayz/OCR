@@ -136,7 +136,10 @@ int main(/* int argc, char **argv */)
     Block *bottom = block_init();
     block_split_horizontal(img, left, top, bottom);
 
-    Img *res = img_from_block(img, top);
+    remove_white_margin(img, top);
+    LinkedList *list = line_split(img, top);
+    
+    Img *res = img_from_block(img, list->start->block);
     img_save(res->pixels, res->width, res->height, "res.png");
     //img_save(img->pixels, img->width, img->height, "res.png");
     return 0;

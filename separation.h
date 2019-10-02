@@ -15,7 +15,7 @@ typedef struct _Block
 typedef struct _Node
 {
     Block *block;
-    Node *next;
+    struct _Node *next;
 } Node;
 
 typedef struct _LinkedList {
@@ -36,6 +36,7 @@ Block *remove_top_margin(Img *img, Block *block);
 Block *remove_bottom_margin(Img *img, Block *block);
 Block *remove_left_margin(Img *img, Block *block);
 Block *remove_right_margin(Img *img, Block *block);
+LinkedList *line_split(Img *image, Block *block);
 //Img resize(Img *image);
 
 #endif

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "image.h"
 #include "separation.h"
 
@@ -18,10 +19,10 @@ void block_delete(Block *block)
     free(block);
 }
 
-Node *node_init()
+Node *node_init(Block *block)
 {
     Node *node = malloc(sizeof(Node));
-    node->block = NULL;
+    node->block = block;
     node->next = NULL;
 
     return node;
@@ -44,6 +45,29 @@ LinkedList *list_init()
 void list_free(LinkedList *list)
 {
     free(list);
+}
+
+void list_insert(LinkedList *list, Node *node)
+{
+    if (list->start == NULL)
+    {
+        list->start = node;
+        list->end = node;
+    }
+    list->end->next = node;
+    list->end = node;
+}
+
+int list_length(LinkedList *list)
+{
+    int res = 0;
+    Node *node = list->start;
+    while (node != NULL)
+    {
+        node = node->next;
+        res++;
+    }
+    return res;
 }
 
 Block *img_make_block(Img *image)
@@ -228,46 +252,41 @@ void block_split_horizontal(Img *image, Block *block, Block *top, Block *bottom)
     top->y = block->y;
     top->height = y - block->y;
     bottom->y = y;
-    bottom->height = block->height - y;
+    bottom->height = block->height - top->height;
 
-    //
     top->x = block->x;
     top->width = block->width;
     bottom->x = block->x;
     bottom->width = block->width;
 }
 
-// Img resize(Img *image)
-// {
-//     int height = image->height;
-//     int width = image->width;
-//     int size = 28;
-//     double fx = width / size * 0.9999;
-//     double fy = height / height * 0.9999;
-//     double fix = 1 / fx;
-//     double fiy = 1 / fy;
-//     double sy1;
-//     double sy2;
-//     double sx1 = size * fx;
-//     double sx2 = sx1 + fx;
-//     double *res = malloc(sizeof(double) * size);
+LinkedList *line_split(Img *image, Block *block)
+{
+    LinkedList *res = list_init();
 
-//     //Check if the character is too big
-//     if (fx < 1 || fy < 1)
-//     {
-//         for (int y = 0; y < size; y++)
-//         {
-//             sy1 = size * fy;
-//             sy2 = sy1 + fy;
-//             //Calculate sy1, sy2, jstart, jend, devY1, devY2.
-//             for (int x = 0; x < size; x++)
-//             {
-//                 /* code */
-//             }
-//         }
-//     }
-//     //Check if the character is too small
-//     else
-//     { //if(fx > 1 || fy>1)
-//     }
-// }
+    Block *current = NULL;
+
+    for (int y = block->y; y < block->y + block->height; y++)
+    {
+        double rate = horizontal_white_rate(image, block, y);
+
+        // If the line is white and previous line is black
+        if (current != NULL && (rate > threshold || y == block->y + block->height - 1))
+        {
+            current->height = y - current->y;
+            list_insert(res, node_init(current));
+            current = NULL;
+        }
+        // If the line is black and the previous line is white (no block defined)
+        else if (rate < threshold && current == NULL)
+        {
+            // Create a new block
+            current = block_init();
+            current->y = y;
+            current->x = block->x;
+            current->width = block->width;
+        }
+    }
+
+    return res;
+}
