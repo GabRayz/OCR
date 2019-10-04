@@ -1,8 +1,7 @@
 #ifndef SEPARATION_H
-
-#define SEPARATION_H
-#include <stdbool.h>
-#include "image.h"
+# define SEPARATION_H
+# include <stdbool.h>
+# include "image.h"
 
 typedef struct _Block
 {
@@ -38,5 +37,6 @@ Block *remove_left_margin(Img *img, Block *block);
 Block *remove_right_margin(Img *img, Block *block);
 LinkedList *line_split(Img *image, Block *block);
 //Img resize(Img *image);
+LinkedList *character_split(Img *image, Block *block);
 
 #endif

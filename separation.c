@@ -290,3 +290,34 @@ LinkedList *line_split(Img *image, Block *block)
 
     return res;
 }
+
+LinkedList *character_split(Img *image, Block *block)
+{
+    LinkedList *res = list_init();
+
+    Block *current = NULL;
+
+    for (int x = block->x; x < block->x + block->width; x++)
+    {
+        double rate = vertical_white_rate(image, block, x);
+
+        // If the column is white and previous column is black
+        if (current != NULL && (rate > threshold || x == block->x + block->width - 1))
+        {
+            current->width = x - current->x;
+            list_insert(res, node_init(current));
+            current = NULL;
+        }
+        // If the column is black and the previous column is white (no block defined)
+        else if (rate < threshold && current == NULL)
+        {
+            // Create a new block
+            current = block_init();
+            current->x = x;
+            current->y = block->y;
+            current->height = block->height;
+        }
+    }
+
+    return res;
+}
