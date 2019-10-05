@@ -167,7 +167,17 @@ void nn_feedForward(NeuralNetwork *nn)
         // Store the product m*a in a temporary matrix
         Matrix *product = m_mult(nn->weights[l], nn->activations[l - 1]);
         nn->z[l] = m_add(product, nn->biaises[l]);
-        nn->activations[l] = m_sigmoid(nn->z[l]);
+        if (l == nn->layerCount - 1) {
+            // Compute a softmax for the last layer
+            // Softmax formula : Aj = exp(Zj) /  Sum_over_k(exp(Zk))
+            Matrix *exp = m_exp(nn->z[l]);
+            double sum = m_sum(exp);
+            nn->activations[l] = m_div(exp, sum);
+            //printf("%lf\n", m_sum(nn->activations[l]));
+            m_delete(exp);
+        }else {
+            nn->activations[l] = m_sigmoid(nn->z[l]);
+        }
 
         // Free the temporary matrix
         m_delete(product);
