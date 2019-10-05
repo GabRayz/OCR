@@ -124,15 +124,28 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
     printf("Accuracy : %lf\n", (sum / cycles) * 100);
 }
 
+Block *list_get_index(LinkedList *list, int index)
+{
+    Node *node = list->start;
+    int i = 0;
+    for (i = 0; i < index && node; i++)
+    {
+        node = node->next;
+    }
+    if (i == index)
+        return node->block;
+    else
+        return NULL;
+}
 
-int main(int argc, char **argv )
+int main(int argc, char **argv)
 {
     // open_window(argc,argv);
     // return 0;
     MagickWandGenesis();
-    Img* img = img_import("dataset/images/paragraphes.jpeg");
+    Img *img = img_import("dataset/images/paragraphes.jpeg");
     Block *block = img_make_block(img);
-    
+
     Block *left = block_init();
     Block *right = block_init();
     block_split_vertical(img, block, left, right);
@@ -143,10 +156,10 @@ int main(int argc, char **argv )
 
     remove_white_margin(img, left);
     LinkedList *list = line_split(img, left);
-    
+
     LinkedList *chars = character_split(img, list->start->block);
 
-    Img *res = img_from_block(img, chars->start->next->next->block);
+    Img *res = img_from_block(img, list_get_index(chars, 2));
     img_save(res->pixels, res->width, res->height, "res.png");
     // img_save(img->pixels, img->width, img->height, "res.png");
     return 0;
