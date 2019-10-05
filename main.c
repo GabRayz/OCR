@@ -5,7 +5,9 @@
 #include "image.h"
 #include "neuralnetwork.h"
 #include "separation.h"
+#include "window.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
+#include <gtk/gtk.h>
 
 char *concat(char *a, char *b)
 {
@@ -122,8 +124,11 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
     printf("Accuracy : %lf\n", (sum / cycles) * 100);
 }
 
-int main(/* int argc, char **argv */)
+
+int main(int argc, char **argv )
 {
+    // open_window(argc,argv);
+    // return 0;
     MagickWandGenesis();
     Img* img = img_import("dataset/images/paragraphes.jpeg");
     Block *block = img_make_block(img);
@@ -132,16 +137,18 @@ int main(/* int argc, char **argv */)
     Block *right = block_init();
     block_split_vertical(img, block, left, right);
 
-    Block *top = block_init();
-    Block *bottom = block_init();
-    block_split_horizontal(img, left, top, bottom);
+    // Block *top = block_init();
+    // Block *bottom = block_init();
+    // block_split_horizontal(img, left, top, bottom);
 
-    remove_white_margin(img, top);
-    LinkedList *list = line_split(img, top);
+    remove_white_margin(img, left);
+    LinkedList *list = line_split(img, left);
     
-    Img *res = img_from_block(img, list->start->block);
+    LinkedList *chars = character_split(img, list->start->block);
+
+    Img *res = img_from_block(img, chars->start->next->next->block);
     img_save(res->pixels, res->width, res->height, "res.png");
-    //img_save(img->pixels, img->width, img->height, "res.png");
+    // img_save(img->pixels, img->width, img->height, "res.png");
     return 0;
 
     // int cycles = 10000;

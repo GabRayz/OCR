@@ -37,14 +37,20 @@ static void on_app_activate(GApplication *app, gpointer data) {
     
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     // a simple push button
-    GtkWidget *btn = gtk_button_new_with_label("Open file");
+    GtkWidget *btn = gtk_button_new_with_label("Open File");
+    GtkWidget *btn2 = gtk_button_new_with_label("Saved Files");
     // connect the event-handler for "clicked" signal of button
     g_signal_connect(btn, "clicked", G_CALLBACK(on_button_clicked), NULL);
+    g_signal_connect(btn2, "clicked", G_CALLBACK(on_button_clicked), NULL);
     
     GtkWidget *halign;
-    halign = gtk_alignment_new(0, 0, 0, 0);
+    GtkWidget *halign2;
+    halign = gtk_alignment_new(0, 0, 0.5, 0.5);
+    halign = gtk_alignment_new(0.5, 0.5, 0.5, 0.5);
     gtk_container_add(GTK_CONTAINER(halign), btn);
+    gtk_container_add(GTK_CONTAINER(halign), btn2);
     gtk_container_add(GTK_CONTAINER(window), halign);
+    gtk_container_add(GTK_CONTAINER(window), halign2);
     // add the button to the window
     // gtk_container_add(GTK_CONTAINER(window), btn);
     // display the window

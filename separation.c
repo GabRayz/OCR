@@ -170,6 +170,22 @@ double vertical_white_rate(Img *image, Block *block, int x)
     return rate;
 }
 
+double vertical_char_white_rate(Img *image, Block *block, int x)
+{
+    // Compute the average rate of white on the column
+    double rate = 0.0;
+    for (int y = 0; y < block->height; y++)
+    {
+        // Get the coordinate of the pixel in the entire image
+        int pixelIndex = (block->y + y) * image->width + x;
+        // Check if pixel at x & x - 1 is black
+        rate += image->pixels[pixelIndex] || (x != block->x && image->pixels[pixelIndex - 1]);
+    }
+    // Average rate of white
+    rate /= block->height;
+    return rate;
+}
+
 double horizontal_white_rate(Img *image, Block *block, int y)
 {
     // Compute the average rate of white on the column
@@ -299,7 +315,7 @@ LinkedList *character_split(Img *image, Block *block)
 
     for (int x = block->x; x < block->x + block->width; x++)
     {
-        double rate = vertical_white_rate(image, block, x);
+        double rate = vertical_char_white_rate(image, block, x);
 
         // If the column is white and previous column is black
         if (current != NULL && (rate > threshold || x == block->x + block->width - 1))

@@ -64,7 +64,7 @@ double *img_grayscale(double *pixels, int size)
     }
 
     // Convert into black & white
-    float threshold = 0.7;
+    float threshold = 0.5;
     for (int i = 0; i < size / 3; i++)
     {
         grayscale[i] = (grayscale[i] < threshold) ? 0 : 1;
@@ -80,11 +80,9 @@ void img_save(double *pixels, int width, int height, char *filepath)
     ClearPixelWand(pixel);
     if (MagickImportImagePixels(wand, 0, 0, width, height, "I", DoublePixel, pixels) == MagickTrue)
     {
-        printf("Success\n");
-
         if (MagickWriteImage(wand, filepath) == MagickTrue)
         {
-            printf("Success\n");
+            printf("Image saved successfuly\n");
         }
         else
         {
