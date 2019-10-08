@@ -32,4 +32,6 @@ Matrix *m_transpose(Matrix *m);
 float m_sum(Matrix *m);
 Matrix *m_average(Matrix **list, int count);
 
+Matrix *m_softmax_prime(Matrix *m);
+
 #endif

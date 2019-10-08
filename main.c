@@ -46,7 +46,7 @@ Img **read_dataset(int dataCount)
     while ((dir = readdir(dataset)) != NULL && i < dataCount)
     {
         // Store the file in the img
-        images[i] = img_init();
+        images[i] = img_init(28, 28);
         images[i]->filepath = concat(prefix, dir->d_name);
         // strcpy(images[i]->label, dir->d_name[0]);
         images[i]->label = dir->d_name[0];
@@ -159,20 +159,30 @@ int main(int argc, char **argv)
 
     LinkedList *chars = character_split(img, list->start->block);
 
-    Img *res = img_from_block(img, list_get_index(chars, 2));
+    remove_white_margin(img, list_get_index(chars, 6));
+
+    Img *c = img_from_block(img, list_get_index(chars, 6));
+    Img *res = img_resize(img, list_get_index(chars, 6), 28, 28);
+
     img_save(res->pixels, res->width, res->height, "res.png");
-    // img_save(img->pixels, img->width, img->height, "res.png");
+    // img_save(c->pixels, c->width, c->height, "res.png");
+    // return 0;
+    int cycles = 10000;
+    Img **images = read_dataset(COUNT);
+    
+    dataset_to_pixels(images, COUNT);
+    
+    int layerSizes[] = {784, 20, 93};
+    
+    NeuralNetwork *nn = nn_init(layerSizes, 3);
+    nn_setupRandom(nn);
+    
+    train(nn, images, cycles, 1);
+    // train(nn, images, cycles, 0);
+
+    nn_compute(nn, res->pixels, 'l');
+    printf("%c\n", nn_getResult(nn));
     return 0;
 
-    // int cycles = 10000;
-    // Img **images = read_dataset(COUNT);
-    // dataset_to_pixels(images, COUNT);
-
-    // int layerSizes[] = {784, 20, 93};
-    // NeuralNetwork *nn = nn_init(layerSizes, 3);
-    // nn_setupRandom(nn);
-
-    // train(nn, images, cycles, 1);
-    // train(nn, images, cycles, 0);
-    // return 0;
+    
 }

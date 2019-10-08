@@ -247,6 +247,24 @@ Matrix *m_sigmoid_prime(Matrix *m)
     return res;
 }
 
+Matrix *m_softmax_prime(Matrix *m)
+{
+    assert(m->height == 1);
+    Matrix *res = m_init(m->height, m->width);
+    Matrix *exp = m_exp(m);
+    double sum = m_sum(exp);
+    for (int y = 0; y < m->height; y++)
+    {
+        for (int x = 0; x < m->width; x++)
+        {
+            res->content[y][x] = exp->content[y][x] * (sum - exp->content[y][x]);
+            // double sig = sigmoid(res->content[y][x]);
+            // res->content[y][x] = sig * (1 - sig); // Just compute the derivative of sigmoid
+        }
+    }
+    return res;
+}
+
 Matrix *m_transpose(Matrix *m)
 {
     // Transpose rows and colomns

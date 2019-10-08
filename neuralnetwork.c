@@ -18,7 +18,6 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
     nn->dWeights = malloc(sizeof(Matrix *) * layerCount);
     // Allocate the size of a Matrix for the expected result of the last layer.
     nn->y = m_init(layerSizes[layerCount - 1], 1);
-
     // Go through all layers to initialize the matrices.
     for (int l = 0; l < layerCount; l++)
     {
@@ -197,7 +196,8 @@ void nn_backProp(NeuralNetwork *nn)
     
     // Compute the error on the output layer
     Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
-    Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
+    // Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
+    Matrix *zSigmoidPrime = m_softmax_prime(nn->z[nn->layerCount - 1]);
     nn->errors[nn->layerCount - 1] = m_hadamard(costPrime, zSigmoidPrime);
 
     // Free temporary matrices
