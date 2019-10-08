@@ -1,7 +1,7 @@
 #ifndef SEPARATION_H
 # define SEPARATION_H
 # include <stdbool.h>
-# include "image.h"
+
 
 typedef struct _Block
 {
@@ -11,16 +11,8 @@ typedef struct _Block
     int height;
 } Block;
 
-typedef struct _Node
-{
-    Block *block;
-    struct _Node *next;
-} Node;
-
-typedef struct _LinkedList {
-    Node *start;
-    Node *end;
-} LinkedList;
+# include "image.h"
+#include "linkedlist.h"
 
 Block *block_init();
 void block_delete(Block *block);

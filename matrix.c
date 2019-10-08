@@ -249,7 +249,6 @@ Matrix *m_sigmoid_prime(Matrix *m)
 
 Matrix *m_softmax_prime(Matrix *m)
 {
-    assert(m->height == 1);
     Matrix *res = m_init(m->height, m->width);
     Matrix *exp = m_exp(m);
     double sum = m_sum(exp);

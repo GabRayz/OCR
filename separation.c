@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "image.h"
+#include "linkedlist.h"
 #include "separation.h"
 
 Block *block_init()
@@ -31,43 +32,6 @@ Node *node_init(Block *block)
 void node_free(Node *list)
 {
     free(list);
-}
-
-LinkedList *list_init()
-{
-    LinkedList *list = malloc(sizeof(LinkedList));
-    list->start = NULL;
-    list->end = NULL;
-
-    return list;
-}
-
-void list_free(LinkedList *list)
-{
-    free(list);
-}
-
-void list_insert(LinkedList *list, Node *node)
-{
-    if (list->start == NULL)
-    {
-        list->start = node;
-        list->end = node;
-    }
-    list->end->next = node;
-    list->end = node;
-}
-
-int list_length(LinkedList *list)
-{
-    int res = 0;
-    Node *node = list->start;
-    while (node != NULL)
-    {
-        node = node->next;
-        res++;
-    }
-    return res;
 }
 
 Block *img_make_block(Img *image)
