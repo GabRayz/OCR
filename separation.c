@@ -25,6 +25,7 @@ Node *node_init(Block *block)
     Node *node = malloc(sizeof(Node));
     node->block = block;
     node->next = NULL;
+    node->previous = NULL;
 
     return node;
 }
@@ -165,8 +166,40 @@ double horizontal_white_rate(Img *image, Block *block, int y)
     return rate;
 }
 
-void block_split_vertical(Img *image, Block *block, Block *res1, Block *res2)
+// void block_split_vertical(Img *image, Block *block, Block *res1, Block *res2)
+// {
+//     // Remove margins
+//     remove_white_margin(image, block);
+//     int x = block->x;
+//     // Go through columns until finding a white column
+//     while (vertical_white_rate(image, block, x) < threshold && x < block->x + block->width)
+//     {
+//         x++;
+//     }
+//     if (x == block->x + block->width)
+//     {
+//         block_delete(res1);
+//         block_delete(res2);
+//         return;
+//     }
+//     // Cut the image
+//     res1->x = block->x;
+//     res1->width = x - block->x;
+//     res2->x = x;
+//     res2->width = block->width - x;
+
+//     //
+//     res1->y = block->y;
+//     res1->height = block->height;
+//     res2->y = block->y;
+//     res2->height = block->height;
+// }
+
+// Mieux
+LinkedList *block_split_vertical(Img *image, Block *block)
 {
+    /* Split the block in two, put them in a linked list */
+    
     // Remove margins
     remove_white_margin(image, block);
     int x = block->x;
@@ -175,23 +208,37 @@ void block_split_vertical(Img *image, Block *block, Block *res1, Block *res2)
     {
         x++;
     }
+    // If no cut is needed
     if (x == block->x + block->width)
     {
-        block_delete(res1);
-        block_delete(res2);
-        return;
+        LinkedList *res = list_init();
+        // Put the main block in the list
+        Node *node = node_init(block);
+        res->start = node;
+        res->end = node;
+        return res;
     }
+    // If the block has been cut
+    Block *res1 = block_init();
+    Block *res2 = block_init();
+
     // Cut the image
     res1->x = block->x;
     res1->width = x - block->x;
     res2->x = x;
     res2->width = block->width - x;
 
-    //
+    // Set y attributes
     res1->y = block->y;
     res1->height = block->height;
     res2->y = block->y;
     res2->height = block->height;
+
+    // TODO : Call horizontal instead of vertical
+    LinkedList *child1 = block_split_vertical(image, res1);
+    LinkedList *child2 = block_split_vertical(image, res2);
+
+    return list_concat(child1, child2);
 }
 
 void block_split_horizontal(Img *image, Block *block, Block *top, Block *bottom)

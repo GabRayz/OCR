@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "separation.h"
 #include "linkedlist.h"
+#include <assert.h>
 
 LinkedList *list_init()
 {
@@ -16,16 +17,31 @@ void list_free(LinkedList *list)
     free(list);
 }
 
-void list_insert(LinkedList *list, Node *node)
-{
-    if (list->start == NULL)
-    {
-        list->start = node;
-        list->end = node;
-    }
-    list->end->next = node;
-    list->end = node;
-}
+// void list_insert(LinkedList *list, Node *node)
+// {
+//     if (list->start == NULL)
+//     {
+//         list->start = node;
+//         list->end = node;
+//     }
+//     node->previous = list->end;
+//     list->end->next = node;
+//     list->end = node;
+// }
+
+// void list_insert_list(Node *source, LinkedList *list)
+// {
+//     list_link_nodes(source->next, list->start);
+//     list_link_nodes(list->end, source->)
+//     list->end->next = source->next;
+//     source->next->previous = list->end;
+// }
+
+// void list_link_nodes(Node *a, Node *b)
+// {
+//     a->next = b;
+//     b->previous = a;
+// }
 
 int list_length(LinkedList *list)
 {
@@ -41,13 +57,21 @@ int list_length(LinkedList *list)
 
 LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
 {
-    if (!l1->start)
-        return l1;
-    Node *n = l1->start;
-    while (n != NULL)
-    {
-        n = n->next;
+    assert(l1 != NULL && l2 != NULL);
+
+    if (!l1->start) {
+        list_free(l1);
+        return l2;
     }
-    n->next = l2->start;
+    
+    assert(l1->end != NULL);
+
+    l1->end->next = l2->start;
+    if (l2->start) {
+        l2->start->previous = l1->end->next;
+        l1->end = l2->end;
+    }
+
+    list_free(l2);
     return l1;
 }
