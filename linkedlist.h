@@ -1,7 +1,13 @@
-#ifndef LINKED_LIST_H
-#define LINKED_LIST_H
+# ifndef LINKED_LIST_H
+# define LINKED_LIST_H
 
-#include "separation.h"
+typedef struct _Block
+{
+    int x;
+    int y;
+    int width;
+    int height;
+} Block;
 
 typedef struct _Node
 {
@@ -10,7 +16,8 @@ typedef struct _Node
     struct _Node *previous;
 } Node;
 
-typedef struct _LinkedList {
+typedef struct _LinkedList
+{
     Node *start;
     Node *end;
 } LinkedList;

@@ -17,31 +17,17 @@ void list_free(LinkedList *list)
     free(list);
 }
 
-// void list_insert(LinkedList *list, Node *node)
-// {
-//     if (list->start == NULL)
-//     {
-//         list->start = node;
-//         list->end = node;
-//     }
-//     node->previous = list->end;
-//     list->end->next = node;
-//     list->end = node;
-// }
-
-// void list_insert_list(Node *source, LinkedList *list)
-// {
-//     list_link_nodes(source->next, list->start);
-//     list_link_nodes(list->end, source->)
-//     list->end->next = source->next;
-//     source->next->previous = list->end;
-// }
-
-// void list_link_nodes(Node *a, Node *b)
-// {
-//     a->next = b;
-//     b->previous = a;
-// }
+void list_insert(LinkedList *list, Node *node)
+{
+    if (list->start == NULL)
+    {
+        list->start = node;
+        list->end = node;
+    }
+    node->previous = list->end;
+    list->end->next = node;
+    list->end = node;
+}
 
 int list_length(LinkedList *list)
 {
@@ -63,7 +49,7 @@ LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
         list_free(l1);
         return l2;
     }
-    
+
     assert(l1->end != NULL);
 
     l1->end->next = l2->start;

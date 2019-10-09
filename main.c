@@ -144,7 +144,7 @@ LinkedList *split_paragraphs(Img *source)
     Takes a source image and creates blocks, each one containing a paragraph.
     returns the linked list of blocks
    */
-
+  return NULL;
 }
 
 int main(int argc, char **argv)
@@ -154,17 +154,11 @@ int main(int argc, char **argv)
     MagickWandGenesis();
     Img *img = img_import("dataset/images/paragraphes.jpeg");
     Block *block = img_make_block(img);
-
-    Block *left = block_init();
-    Block *right = block_init();
-    block_split_vertical(img, block, left, right);
-
-    // Block *top = block_init();
-    // Block *bottom = block_init();
-    // block_split_horizontal(img, left, top, bottom);
-
-    remove_white_margin(img, left);
-    LinkedList *list = line_split(img, left);
+    
+    LinkedList *paragraphs = block_split_vertical(img, block);
+    
+    remove_white_margin(img, paragraphs->start->block);
+    LinkedList *list = line_split(img, paragraphs->start->block);
 
     LinkedList *chars = character_split(img, list->start->block);
 
@@ -175,7 +169,7 @@ int main(int argc, char **argv)
 
     img_save(res->pixels, res->width, res->height, "res.png");
     // img_save(c->pixels, c->width, c->height, "res.png");
-    // return 0;
+    return 0;
     int cycles = 10000;
     Img **images = read_dataset(COUNT);
 

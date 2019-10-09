@@ -1,17 +1,8 @@
 #ifndef SEPARATION_H
 # define SEPARATION_H
+
 # include <stdbool.h>
-
-
-typedef struct _Block
-{
-    int x;
-    int y;
-    int width;
-    int height;
-} Block;
-
-# include "image.h"
+#include "image.h"
 #include "linkedlist.h"
 
 Block *block_init();
@@ -22,7 +13,7 @@ double horizontal_white_rate(Img *image, Block *block, int y);
 Block *img_make_block(Img *image);
 Img *img_from_block(Img *source, Block *block);
 LinkedList *block_split_vertical(Img *image, Block *block);
-void block_split_horizontal(Img *image, Block *block, Block *top, Block *bottom);
+LinkedList *block_split_horizontal(Img *image, Block *block);
 Block *remove_top_margin(Img *img, Block *block);
 Block *remove_bottom_margin(Img *img, Block *block);
 Block *remove_left_margin(Img *img, Block *block);
