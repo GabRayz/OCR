@@ -138,6 +138,66 @@ Block *list_get_index(LinkedList *list, int index)
         return NULL;
 }
 
+LinkedList *split_paragraphs(Img *source)
+{
+   /*
+    Takes a source image and creates blocks, each one containing a paragraph.
+    returns the linked list of blocks
+   */
+
+}
+
+int *_split_paragraphs_vertical(Img *source, Block *block, Block *res1, Block *res2, LinkedList *list, Node *lastNode) {
+    /*
+    Take a block to split it.
+    Returns 1 if the block has been split, 0 otherwise
+    */
+   Block *res1 = block_init();
+   Block *res2 = block_init();
+
+   block_split_vertical(source, block, res1, res2);
+
+   // Check if it is split
+   if(res1->x != res2->x) {
+       lastNode->next = node_init(block);
+       LinkedList *list1 = list_init();
+       LinkedList *list2 = list_init();
+       remove_white_margin(source, res1);
+       remove_white_margin(source, res2);
+
+        
+
+       list = list_concat(list1, list2);
+       return 1;
+   }else {
+       block_delete(res1);
+       block_delete(res2);
+       return 0;
+   }
+}
+
+int *_split_paragraphs_horizontal(Img *source, Block *block, Block *res1, Block *res2) {
+    /*
+    Take a block to split it.
+    Returns 1 if the block has been split, 0 otherwise
+    */
+   Block *res1 = block_init();
+   Block *res2 = block_init();
+
+   block_split_horizontal(source, block, res1, res2);
+
+   // Check if it is split
+   if(res1->y != res2->y) {
+       remove_white_margin(source, res1);
+       remove_white_margin(source, res2);
+       return 1;
+   }else {
+       block_delete(res1);
+       block_delete(res2);
+       return 0;
+   }
+}
+
 int main(int argc, char **argv)
 {
     // open_window(argc,argv);
@@ -169,20 +229,18 @@ int main(int argc, char **argv)
     // return 0;
     int cycles = 10000;
     Img **images = read_dataset(COUNT);
-    
+
     dataset_to_pixels(images, COUNT);
-    
+
     int layerSizes[] = {784, 20, 93};
-    
+
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
-    
+
     train(nn, images, cycles, 1);
     // train(nn, images, cycles, 0);
 
     nn_compute(nn, res->pixels, 'l');
     printf("%c\n", nn_getResult(nn));
     return 0;
-
-    
 }

@@ -18,6 +18,7 @@ LinkedList *list_init();
 void list_free(LinkedList *list);
 void list_insert(LinkedList *list, Node *node);
 int list_length(LinkedList *list);
-
+LinkedList *list_concat(LinkedList *l1, LinkedList *l2);
+Node *node_init(Block *block);
 
 #endif
