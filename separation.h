@@ -1,7 +1,6 @@
 #ifndef SEPARATION_H
 # define SEPARATION_H
 
-# include <stdbool.h>
 #include "image.h"
 #include "linkedlist.h"
 

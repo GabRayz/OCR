@@ -203,9 +203,10 @@ LinkedList *block_split_vertical(Img *image, Block *block)
     res1->height = block->height;
     res2->y = block->y;
     res2->height = block->height;
-
+    printf("debug 1\n");
     LinkedList *child1 = block_split_horizontal(image, res1);
     LinkedList *child2 = block_split_horizontal(image, res2);
+    printf("debug\n");
     return list_concat(child1, child2);
 }
 
@@ -216,13 +217,37 @@ LinkedList *block_split_horizontal(Img *image, Block *block)
     // Remove margins
     remove_white_margin(image, block);
     int y = block->y;
-    // Go through columns until finding a white column
-    while (horizontal_white_rate(image, block, y) < threshold && y < block->y + block->height)
+    
+    int blackHeight = 0;
+    int whiteHeight = 0;
+    int currentColor = 0;
+    while (whiteHeight <= blackHeight * 1.5 && y < block->y + block->height)
     {
+        double rate = horizontal_white_rate(image, block, y);
+        // If the line is black
+        if (rate < threshold) {
+            blackHeight++;
+            // If the last line was white
+            if (currentColor == 1)
+            {
+                whiteHeight = 0;
+                blackHeight = 1;
+            }
+            currentColor = 0;
+        } // If the line is white
+        else if (blackHeight > 5)
+        {
+            whiteHeight++;
+            currentColor = 1;
+        }
+
         y++;
     }
+    // Remove last white lines
+    y -= whiteHeight;
+
     // If no cut is needed
-    if (y == block->y + block->width)
+    if (y == block->y + block->height)
     {
         LinkedList *res = list_init();
         // Put the main block in the list

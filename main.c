@@ -156,6 +156,9 @@ int main(int argc, char **argv)
     Block *block = img_make_block(img);
     
     LinkedList *paragraphs = block_split_vertical(img, block);
+    Img *c = img_from_block(img, paragraphs->start->block);
+    img_save(c->pixels, c->width, c->height, "res.png");
+    return 0;
     
     remove_white_margin(img, paragraphs->start->block);
     LinkedList *list = line_split(img, paragraphs->start->block);
@@ -164,10 +167,10 @@ int main(int argc, char **argv)
 
     remove_white_margin(img, list_get_index(chars, 6));
 
-    Img *c = img_from_block(img, list_get_index(chars, 6));
+    
     Img *res = img_resize(img, list_get_index(chars, 6), 28, 28);
 
-    img_save(res->pixels, res->width, res->height, "res.png");
+    
     // img_save(c->pixels, c->width, c->height, "res.png");
     return 0;
     int cycles = 10000;
