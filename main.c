@@ -138,13 +138,40 @@ Block *list_get_index(LinkedList *list, int index)
         return NULL;
 }
 
-LinkedList *split_paragraphs(Img *source)
+NeuralNetwork *create_nn() {
+    // Create a neural network, initialize it randomly, and make it learn
+    int cycles = 1000;
+    Img **images = read_dataset(COUNT);
+    dataset_to_pixels(images, COUNT);
+
+    int layerSizes[] = {784, 20, 93};
+    NeuralNetwork *nn = nn_init(layerSizes, 3);
+    nn_setupRandom(nn);
+
+    train(nn, images, cycles, 1);
+}
+
+LinkedList *segmentation(Img *source)
 {
-   /*
-    Takes a source image and creates blocks, each one containing a paragraph.
-    returns the linked list of blocks
-   */
-  return NULL;
+    Block *block = img_make_block(source);
+    LinkedList *paragraphs = block_split_vertical(source, block);
+
+    LinkedList *lines = list_init();
+    Node *p = paragraphs->start;
+    while (p) {
+        list_concat(lines, line_split(source, p->block));
+        p = p->next;
+    }
+    // return lines;
+
+    LinkedList *chars = list_init();
+    Node *l = chars->start;
+    while (l) {
+        list_concat(chars, character_split(source, l->block));
+        l = l->next;
+    }
+
+    return chars;
 }
 
 int main(int argc, char **argv)
@@ -152,41 +179,11 @@ int main(int argc, char **argv)
     // open_window(argc,argv);
     // return 0;
     MagickWandGenesis();
-    Img *img = img_import("dataset/images/paragraphes.jpeg");
-    Block *block = img_make_block(img);
+    Img *source = img_import("dataset/images/paragraphes.jpeg");
+    LinkedList *chars = segmentation(source);
+
+    Img *res = img_from_block(source, chars->start->block);
+    img_save(res->pixels, res->width, res->height, "res.png");
     
-    LinkedList *paragraphs = block_split_vertical(img, block);
-    Img *c = img_from_block(img, paragraphs->start->block);
-    img_save(c->pixels, c->width, c->height, "res.png");
-    return 0;
-    
-    remove_white_margin(img, paragraphs->start->block);
-    LinkedList *list = line_split(img, paragraphs->start->block);
-
-    LinkedList *chars = character_split(img, list->start->block);
-
-    remove_white_margin(img, list_get_index(chars, 6));
-
-    
-    Img *res = img_resize(img, list_get_index(chars, 6), 28, 28);
-
-    
-    // img_save(c->pixels, c->width, c->height, "res.png");
-    return 0;
-    int cycles = 10000;
-    Img **images = read_dataset(COUNT);
-
-    dataset_to_pixels(images, COUNT);
-
-    int layerSizes[] = {784, 20, 93};
-
-    NeuralNetwork *nn = nn_init(layerSizes, 3);
-    nn_setupRandom(nn);
-
-    train(nn, images, cycles, 1);
-    // train(nn, images, cycles, 0);
-
-    nn_compute(nn, res->pixels, 'l');
-    printf("%c\n", nn_getResult(nn));
     return 0;
 }

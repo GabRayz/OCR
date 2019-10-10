@@ -2,6 +2,7 @@
 #include "separation.h"
 #include "linkedlist.h"
 #include <assert.h>
+#include <stdio.h>
 
 LinkedList *list_init()
 {
@@ -14,7 +15,24 @@ LinkedList *list_init()
 
 void list_free(LinkedList *list)
 {
+    assert(list != NULL);
     free(list);
+}
+
+Node *node_init(Block *block)
+{
+    Node *node = malloc(sizeof(Node));
+    node->block = block;
+    node->next = NULL;
+    node->previous = NULL;
+
+    return node;
+}
+
+void node_free(Node *node)
+{
+    assert(node != NULL);
+    free(node);
 }
 
 void list_insert(LinkedList *list, Node *node)
@@ -44,8 +62,7 @@ int list_length(LinkedList *list)
 LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
 {
     assert(l1 != NULL && l2 != NULL);
-
-    if (!l1->start) {
+    if (l1->start == NULL) {
         list_free(l1);
         return l2;
     }
@@ -54,7 +71,7 @@ LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
 
     l1->end->next = l2->start;
     if (l2->start) {
-        l2->start->previous = l1->end->next;
+        l2->start->previous = l1->end;
         l1->end = l2->end;
     }
 

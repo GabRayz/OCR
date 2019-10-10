@@ -3,6 +3,7 @@
 #include "image.h"
 #include "linkedlist.h"
 #include "separation.h"
+#include <assert.h>
 
 Block *block_init()
 {
@@ -17,22 +18,8 @@ Block *block_init()
 
 void block_delete(Block *block)
 {
+    assert(block != NULL);
     free(block);
-}
-
-Node *node_init(Block *block)
-{
-    Node *node = malloc(sizeof(Node));
-    node->block = block;
-    node->next = NULL;
-    node->previous = NULL;
-
-    return node;
-}
-
-void node_free(Node *list)
-{
-    free(list);
 }
 
 Block *img_make_block(Img *image)
@@ -203,10 +190,8 @@ LinkedList *block_split_vertical(Img *image, Block *block)
     res1->height = block->height;
     res2->y = block->y;
     res2->height = block->height;
-    printf("debug 1\n");
     LinkedList *child1 = block_split_horizontal(image, res1);
     LinkedList *child2 = block_split_horizontal(image, res2);
-    printf("debug\n");
     return list_concat(child1, child2);
 }
 
