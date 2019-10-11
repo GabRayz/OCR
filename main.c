@@ -5,9 +5,7 @@
 #include "image.h"
 #include "neuralnetwork.h"
 #include "separation.h"
-#include "window.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
-#include <gtk/gtk.h>
 
 char *concat(char *a, char *b)
 {
@@ -149,6 +147,7 @@ NeuralNetwork *create_nn() {
     nn_setupRandom(nn);
 
     train(nn, images, cycles, 1);
+    return nn;
 }
 
 LinkedList *segmentation(Img *source)
@@ -174,10 +173,8 @@ LinkedList *segmentation(Img *source)
     return chars;
 }
 
-int main(int argc, char **argv)
+int main()
 {
-    // open_window(argc,argv);
-    // return 0;
     MagickWandGenesis();
     Img *source = img_import("dataset/images/paragraphes.jpeg");
     LinkedList *chars = segmentation(source);
