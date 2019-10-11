@@ -166,7 +166,7 @@ void nn_feedForward(NeuralNetwork *nn)
         // Store the product m*a in a temporary matrix
         Matrix *product = m_mult(nn->weights[l], nn->activations[l - 1]);
         nn->z[l] = m_add(product, nn->biaises[l]);
-        if (l == nn->layerCount - 1) {
+        if (l == nn->layerCount - 1 && 0) {
             // Compute a softmax for the last layer
             // Softmax formula : Aj = exp(Zj) /  Sum_over_k(exp(Zk))
             Matrix *exp = m_exp(nn->z[l]);
@@ -196,8 +196,8 @@ void nn_backProp(NeuralNetwork *nn)
     
     // Compute the error on the output layer
     Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
-    // Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
-    Matrix *zSigmoidPrime = m_softmax_prime(nn->z[nn->layerCount - 1]);
+    Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
+    // Matrix *zSigmoidPrime = m_softmax_prime(nn->z[nn->layerCount - 1]);
     nn->errors[nn->layerCount - 1] = m_hadamard(costPrime, zSigmoidPrime);
 
     // Free temporary matrices

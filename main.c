@@ -60,11 +60,11 @@ Img **read_dataset(int dataCount)
 
 void print_image(Img *image)
 {
-    for (int y = 0; y < 28; y++)
+    for (int y = 0; y < image->height; y++)
     {
-        for (int x = 0; x < 28; x++)
+        for (int x = 0; x < image->width; x++)
         {
-            printf("%d ", (int)image->pixels[y * 28 + x]);
+            printf("%d ", (int)image->pixels[y * image->width + x]);
         }
         printf("\n");
     }
@@ -138,7 +138,7 @@ Block *list_get_index(LinkedList *list, int index)
 
 NeuralNetwork *create_nn() {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 1000;
+    int cycles = 10000;
     Img **images = read_dataset(COUNT);
     dataset_to_pixels(images, COUNT);
 
@@ -147,6 +147,7 @@ NeuralNetwork *create_nn() {
     nn_setupRandom(nn);
 
     train(nn, images, cycles, 1);
+    train(nn, images, cycles, 0);
     return nn;
 }
 
@@ -172,14 +173,45 @@ LinkedList *segmentation(Img *source)
     return chars;
 }
 
+char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn) {
+    char *res = malloc(sizeof(char) * list_length(chars));
+    Node *n = chars->start;
+    int i = 0;
+    while (n) {
+        remove_white_margin(source, n->block);
+        Img* resized = img_resize(source, n->block, 28, 28);
+        // Send to the neural network
+        nn_compute(nn, resized->pixels, 100);
+        res[i] = nn_getResult(nn);
+        n = n->next;
+        i++;
+    }
+
+    return res;
+}
+
+NeuralNetwork *learn_from_img(Img *source, LinkedList *chars, char *label) {
+    
+}
+
 int main()
 {
     MagickWandGenesis();
     Img *source = img_import("dataset/images/paragraphes.jpeg");
     LinkedList *chars = segmentation(source);
     
-    Img *res = img_from_block(source, chars->start->block);
-    img_save(res->pixels, res->width, res->height, "res.png");
-    
+    NeuralNetwork *nn = create_nn();
+    // Img *m = img_from_block(source, chars->start->next->next->next->next->next->next->block);
+    remove_white_margin(source, chars->start->next->next->next->next->next->next->block);
+    Img *m = img_resize(source, chars->start->next->next->next->next->next->next->block, 28, 28);
+    // img_save(m->pixels, m->width, m->height, "res.png");
+
+
+    print_image(m);
+    nn_compute(nn, m, 'm');
+    printf("%c\n", nn_getResult(nn));
+    char *res = send_to_cerveau(source, chars, nn);
+    printf("%s\n", res);
+
     return 0;
 }
