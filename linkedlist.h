@@ -31,5 +31,6 @@ Node *node_init(Block *block);
 void node_free(Node *node);
 void list_link_nodes(Node *a, Node *b);
 void list_insert_list(Node *source, LinkedList *list);
+Block *list_get_index(LinkedList *list, int index);
 
 #endif

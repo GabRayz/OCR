@@ -47,13 +47,25 @@ Img *img_import(char *filepath)
     return res;
 }
 
-void img_print(double *pixels, int width, int height)
+void print_image(Img *image)
 {
-    for (int y = 0; y < height; y++)
+    for (int y = 0; y < image->height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < image->width; x++)
         {
-            printf("%lf ", pixels[y * width + x]);
+            printf("%d ", (int)image->pixels[y * image->width + x]);
+        }
+        printf("\n");
+    }
+}
+
+void block_print(Img *source, Block *block)
+{
+    for (int y = 0; y < block->height; y++)
+    {
+        for (int x = 0; x < block->width; x++)
+        {
+            printf("%d ", (int)source->pixels[y * block->width + x]);
         }
         printf("\n");
     }

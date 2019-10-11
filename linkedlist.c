@@ -78,3 +78,18 @@ LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
     list_free(l2);
     return l1;
 }
+
+Block *list_get_index(LinkedList *list, int index)
+{
+    Node *node = list->start;
+    int i = 0;
+    for (i = 0; i < index && node; i++)
+    {
+        node = node->next;
+    }
+    if (i == index)
+        return node->block;
+    else
+        return NULL;
+}
+

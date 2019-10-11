@@ -15,7 +15,8 @@ typedef struct _Img
 Img *img_init();
 
 Img *img_import(char *filepath);
-void img_print(double *pixels, int width, int height);
+void print_image(Img *image);
+void block_print(Img *source, Block *block);
 double *img_grayscale(double *pixels, int size);
 void img_save(double *pixels, int width, int height, char *filepath);
 Img *img_resize(Img *source, Block *block, int width, int height);
