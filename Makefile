@@ -11,7 +11,7 @@ CFLAGS = -Wall -Wextra -std=c99 `pkg-config --cflags MagickWand`
 CLIBS = `pkg-config --libs MagickWand`
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CLIBS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CLIBS) -lm
 
 all: $(NAME)
 
