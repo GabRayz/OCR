@@ -188,7 +188,7 @@ LinkedList *block_split_vertical(Img *image, Block *block)
     res1->x = block->x;
     res1->width = x - block->x;
     res2->x = x;
-    res2->width = block->width - x;
+    res2->width = (block->x + block->width) - x;
 
     // Set y attributes
     res1->y = block->y;
