@@ -6,7 +6,9 @@
 #include "image.h"
 #include "neuralnetwork.h"
 #include "separation.h"
+#include "window.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
+#include <assert.h>
 
 char *concat(char *a, char *b)
 {
@@ -59,6 +61,61 @@ Img **read_dataset(int dataCount)
     return images;
 }
 
+Img **read_dataset2()
+{
+    /* 
+    Read the dataset/training directory to get images names
+     */
+    int dataCount = 1016 * 62;
+    Img **images = malloc(sizeof(Img *) * dataCount);
+    char *prefix = "./dataset/fonts/";
+    char **files = malloc(sizeof(char *) * dataCount);
+
+    struct dirent *dir;
+    DIR *dataset = opendir(prefix);
+
+    assert(dataset != NULL);
+
+    // Skip self and parent directory
+    readdir(dataset);
+    readdir(dataset);
+
+    int i = 0;
+    while ((dir = readdir(dataset)) != NULL && i < 62)
+    {
+        char *folderName = concat(prefix, dir->d_name);
+        char *tmp = concat(folderName, "/");
+        DIR *character = opendir(folderName);
+        int num = atoi(dir->d_name);
+        char label = num < 11 ? num + '0' - 1 : num < 37 ? num + 'A' - 11 : num + 'a' - 37;
+        readdir(character);
+        readdir(character);
+
+        struct dirent *dir2;
+        int j = 0;
+        while ((dir2 = readdir(character)) != NULL && j < 1016)
+        {
+            char *fileName = concat(tmp, dir2->d_name);
+
+            // Store the file in the img
+            int index = i * 1016 + j;
+            images[index] = img_init(28, 28);
+            images[index]->filepath = fileName;
+            images[index]->label = label;
+
+            j++;
+        }
+
+        free(tmp);
+        free(folderName);
+        closedir(character);
+        i++;
+    }
+
+    closedir(dataset);
+    return images;
+}
+
 void print_image(Img *image)
 {
     for (int y = 0; y < image->height; y++)
@@ -82,6 +139,7 @@ void dataset_to_pixels(Img **images, int dataCount)
         if (MagickReadImage(mw, image->filepath) == MagickTrue)
         {
             // printf("File opened successfuly\n");
+            MagickAdaptiveResizeImage(mw, 28, 28);
             MagickExportImagePixels(mw, 0, 0, 28, 28, "R", DoublePixel, image->pixels);
 
             //print_image(image);
@@ -104,7 +162,8 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
 
     for (int i = 0; i < cycles; i++)
     {
-        Img *img = images[i % COUNT];
+        unsigned int index = rand() % 62992;
+        Img *img = images[index];
 
         nn_compute(nn, img->pixels, (int)img->label);
 
@@ -143,12 +202,17 @@ NeuralNetwork *create_nn()
 {
     // Create a neural network, initialize it randomly, and make it learn
     int cycles = 10000;
-    Img **images = read_dataset(COUNT);
-    dataset_to_pixels(images, COUNT);
+    Img **images = read_dataset2();
+    // Img **images = read_dataset(COUNT);
+    printf("loaded paths\n");
+    dataset_to_pixels(images, 1016 * 62);
+    printf("to pixels ok !\n");
+    // dataset_to_pixels(images, COUNT);
 
     int layerSizes[] = {784, 20, 93};
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
+    printf("let's train\n");
 
     train(nn, images, cycles, 1);
     train(nn, images, cycles, 0);
@@ -234,6 +298,9 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label)
 
 int main()
 {
+    init_window();
+    return 0;
+    // read_dataset2();
     MagickWandGenesis();
     Img *source = img_import("dataset/images/paragraphes.jpeg");
     LinkedList *chars = segmentation(source);

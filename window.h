@@ -2,5 +2,6 @@
 #define WINDOW_H
 
 void init_window();
+void pause();
 
 #endif
