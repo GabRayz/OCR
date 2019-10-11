@@ -158,15 +158,14 @@ LinkedList *segmentation(Img *source)
     LinkedList *lines = list_init();
     Node *p = paragraphs->start;
     while (p) {
-        list_concat(lines, line_split(source, p->block));
+        lines = list_concat(lines, line_split(source, p->block));
         p = p->next;
     }
-    // return lines;
-
+    
     LinkedList *chars = list_init();
-    Node *l = chars->start;
+    Node *l = lines->start;
     while (l) {
-        list_concat(chars, character_split(source, l->block));
+        chars = list_concat(chars, character_split(source, l->block)); 
         l = l->next;
     }
 
@@ -178,7 +177,7 @@ int main()
     MagickWandGenesis();
     Img *source = img_import("dataset/images/paragraphes.jpeg");
     LinkedList *chars = segmentation(source);
-
+    
     Img *res = img_from_block(source, chars->start->block);
     img_save(res->pixels, res->width, res->height, "res.png");
     

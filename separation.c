@@ -5,6 +5,11 @@
 #include "separation.h"
 #include <assert.h>
 
+// void assert(int condition) {
+//     if (!condition)
+//         exit(1);
+// }
+
 Block *block_init()
 {
     Block *block = malloc(sizeof(Block));
