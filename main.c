@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 #include "matrix.h"
@@ -111,6 +112,8 @@ void train(NeuralNetwork *nn, Img **images, int cycles, int learn)
             nn_backProp(nn);
         //    printf("Result : %c, Label : %c, cost : %lf\n", nn_getResult(nn), img->label, nn_getCost(nn));
         results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
+        if (!learn)
+            printf("%c", nn_getResult(nn));
     }
 
     double sum = 0;
@@ -136,13 +139,28 @@ Block *list_get_index(LinkedList *list, int index)
         return NULL;
 }
 
-NeuralNetwork *create_nn() {
+NeuralNetwork *create_nn()
+{
     // Create a neural network, initialize it randomly, and make it learn
     int cycles = 10000;
     Img **images = read_dataset(COUNT);
     dataset_to_pixels(images, COUNT);
 
     int layerSizes[] = {784, 20, 93};
+    NeuralNetwork *nn = nn_init(layerSizes, 3);
+    nn_setupRandom(nn);
+
+    train(nn, images, cycles, 1);
+    train(nn, images, cycles, 0);
+    return nn;
+}
+
+NeuralNetwork *create_nn_from_img(Img **images)
+{
+    // Create a neural network, initialize it randomly, and make it learn
+    int cycles = 10000;
+
+    int layerSizes[] = {784, 25, 93};
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
 
@@ -158,28 +176,32 @@ LinkedList *segmentation(Img *source)
 
     LinkedList *lines = list_init();
     Node *p = paragraphs->start;
-    while (p) {
+    while (p)
+    {
         lines = list_concat(lines, line_split(source, p->block));
         p = p->next;
     }
-    
+
     LinkedList *chars = list_init();
     Node *l = lines->start;
-    while (l) {
-        chars = list_concat(chars, character_split(source, l->block)); 
+    while (l)
+    {
+        chars = list_concat(chars, character_split(source, l->block));
         l = l->next;
     }
 
     return chars;
 }
 
-char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn) {
+char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
+{
     char *res = malloc(sizeof(char) * list_length(chars));
     Node *n = chars->start;
     int i = 0;
-    while (n) {
+    while (n)
+    {
         remove_white_margin(source, n->block);
-        Img* resized = img_resize(source, n->block, 28, 28);
+        Img *resized = img_resize(source, n->block, 28, 28);
         // Send to the neural network
         nn_compute(nn, resized->pixels, 100);
         res[i] = nn_getResult(nn);
@@ -190,8 +212,24 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn) {
     return res;
 }
 
-NeuralNetwork *learn_from_img(Img *source, LinkedList *chars, char *label) {
-    
+Img **images_from_list(Img *source, LinkedList *chars, char *label)
+{
+    int length = list_length(chars);
+    Img **images = malloc(sizeof(Img) * length);
+    Node *n = chars->start;
+    // printf("%d\n", strlen(label));
+    int i = 0;
+    for (i = 0; i < length && label[i] != '\0' && i < 1000; i++)
+    {
+        Img *c = img_resize(source, n->block, 28, 28);
+        char truc[] = {i / 100 + 48, (i / 10) % 10 + 48, i % 10 + 48, '\0'};
+        img_save(c->pixels, c->width, c->height, concat(concat("res/", truc), ".png"));
+        images[i] = c;
+        images[i]->label = label[i];
+        n = n->next;
+    }
+    // printf("%d\n", i);
+    return images;
 }
 
 int main()
@@ -199,19 +237,30 @@ int main()
     MagickWandGenesis();
     Img *source = img_import("dataset/images/paragraphes.jpeg");
     LinkedList *chars = segmentation(source);
+
+    Block *i = list_get_index(chars, 16);
     
-    NeuralNetwork *nn = create_nn();
+    Img *truc = img_from_block(source, i);
+    //img_print(truc->pixels, truc->width, truc->height);
+    img_save(truc->pixels, truc->width, truc->height, "res.png");
+    // char *string = "LeLoremIpsumestsimplementdufauxtexteemployédanslacompositionetlamiseenpageavantimpression.LeLoremIpsumestlefauxtextestandarddel'imprimeriedepuislesannées1500,quandunimprimeuranonymeassemblaensembledesmorceauxdetextepourréaliserunlivrespécimendepolicesdetexte.Iln'apasfaitquesurvivrecinqsiècles,maiss'estaussiadaptéàlabureautiqueinformatique,sansquesoncontenun'ensoitmodifié.Ilaétépopularisédanslesannées1960grâceàlaventedefeuillesLetrasetcontenantdespassagesduLoremIpsum,et,plusrécemment,parsoninclusiondansdesapplicationsdemiseenpagedetexte,commeAldusPageMaker.Onsaitdepuislongtempsquetravailleravecdutextelisibleetcontenantdusensestsourcededistractions,etempêchedeseconcentrersurlamiseenpageelle-même.L'avantageduLoremIpsumsuruntextegénériquecomme'Dutexte.Dutexte.Dutexte.'estqu'ilpossèdeunedistributiondelettresplusoumoinsnormale,etentoutcascomparableaveccelledufrançaisstandard.DenombreusessuiteslogiciellesdemiseenpageouéditeursdesitesWebontfaitduLoremIpsumleurfauxtextepardéfaut,etunerecherchepour'LoremIpsum'vousconduiraversdenombreuxsitesquin'ensontencorequ'àleurphasedeconstruction.Plusieursversionssontapparuesavecletemps,parfoisparaccident,souventintentionnellement(histoired'yrajouterdepetitsclinsd'oeil,voiredesphrasesembarassantes).";
+    // Img **images = images_from_list(source, chars, string);
+
+    // NeuralNetwork *nn = create_nn_from_img(images);
+
+    //print_image(images[0]);
+    // printf("%c\n", images[0]->label);
+    // NeuralNetwork *nn = create_nn();
     // Img *m = img_from_block(source, chars->start->next->next->next->next->next->next->block);
-    remove_white_margin(source, chars->start->next->next->next->next->next->next->block);
-    Img *m = img_resize(source, chars->start->next->next->next->next->next->next->block, 28, 28);
+    // remove_white_margin(source, chars->start->next->next->next->next->next->next->block);
+    // Img *m = img_resize(source, chars->start->next->next->next->next->next->next->block, 28, 28);
     // img_save(m->pixels, m->width, m->height, "res.png");
 
-
-    print_image(m);
-    nn_compute(nn, m, 'm');
-    printf("%c\n", nn_getResult(nn));
-    char *res = send_to_cerveau(source, chars, nn);
-    printf("%s\n", res);
+    // print_image(m);
+    // nn_compute(nn, m, 'm');
+    // printf("%c\n", nn_getResult(nn));
+    // char *res = send_to_cerveau(source, chars, nn);
+    // printf("%s\n", res);
 
     return 0;
 }

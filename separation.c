@@ -80,7 +80,7 @@ Block *remove_bottom_margin(Img *img, Block *block)
     while (horizontal_white_rate(img, block, y) > threshold && y > 0)
         y--;
 
-    block->height = y - block->y;
+    block->height = y - block->y + 1;
 
     return block;
 }
@@ -107,7 +107,7 @@ Block *remove_right_margin(Img *img, Block *block)
     while (vertical_white_rate(img, block, x) > threshold && x > 0)
         x--;
 
-    block->width = x - block->x;
+    block->width = x - block->x + 1;
 
     return block;
 }
@@ -313,6 +313,7 @@ LinkedList *character_split(Img *image, Block *block)
         if (current != NULL && (rate > threshold || x == block->x + block->width - 1))
         {
             current->width = x - current->x;
+            remove_white_margin(image, current);
             list_insert(res, node_init(current));
             current = NULL;
         }
@@ -321,7 +322,7 @@ LinkedList *character_split(Img *image, Block *block)
         {
             // Create a new block
             current = block_init();
-            current->x = x;
+            current->x = x - 1;
             current->y = block->y;
             current->height = block->height;
         }
