@@ -6,9 +6,9 @@ SRCS = main.c matrix.c neuralnetwork.c image.c separation.c linkedlist.c
 
 OBJS = $(SRCS:.c=.o)
 
-CFLAGS = -Wall -Wextra -std=c99 `pkg-config --cflags MagickWand gtk+-3.0`
+CFLAGS = -Wall -Wextra -std=c99 `pkg-config --cflags MagickWand`
 
-CLIBS = `pkg-config --libs MagickWand gtk+-3.0`
+CLIBS = `pkg-config --libs MagickWand`
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CLIBS)
