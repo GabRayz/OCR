@@ -5,6 +5,7 @@
 #include "image.h"
 #include "neuralnetwork.h"
 #include "separation.h"
+#include "window.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 #include <assert.h>
 
@@ -274,6 +275,8 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label)
 
 int main()
 {
+    init_window();
+    return 0;
     // read_dataset2();
     MagickWandGenesis();
     // Img *source = img_import("dataset/images/paragraphes.jpeg");
