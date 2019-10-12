@@ -27,19 +27,19 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
     
     for (int i = 0; i < cycles; i++)
     {
-        unsigned int index = rand() % images_count;
+        unsigned int index = learn ? rand() % images_count : i % images_count;
         Img *img = images[index];
-        print_image(img);
-        printf("%c\n", img->label);
-        printf("%d\n", index);
+        // print_image(img);
+        // printf("%c\n", img->label);
+        // printf("%d\n", index);
 
         nn_compute(nn, img->pixels, (int)img->label);
         if (learn)
             nn_backProp(nn);
         
         results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
-        // if (!learn)
-        //     printf("%c", nn_getResult(nn));
+        if (!learn)
+            printf("%c", nn_getResult(nn));
     }
 
     double sum = 0;
@@ -75,13 +75,13 @@ NeuralNetwork *create_nn()
 NeuralNetwork *create_nn_from_img(Img **images, int images_count)
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 10;
+    int cycles = 10000;
 
     int layerSizes[] = {784, 25, 93};
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
     train(nn, images, images_count, cycles, 1);
-    // train(nn, images, images_count, cycles, 0);
+    train(nn, images, images_count, cycles, 0);
     return nn;
 }
 
@@ -137,8 +137,8 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
     for (i = 0; i < length && label[i] != '\0'; i++)
     {
         Img *c = img_resize(source, n->block, 28, 28);
-        char truc[] = {i / 100 + 48, (i / 10) % 10 + 48, i % 10 + 48, '\0'};
-        img_save(c, concat(concat("res/", truc), ".png"));
+        // char truc[] = {i / 100 + 48, (i / 10) % 10 + 48, i % 10 + 48, '\0'};
+        // img_save(c, concat(concat("res/", truc), ".png"));
         images[i] = c;
         images[i]->label = label[i];
         n = n->next;
@@ -154,18 +154,18 @@ int main()
     // return 0;
     // read_dataset2();
     MagickWandGenesis();
-    Img *source = img_import("dataset/images/en.png");
+    Img *source = img_import("dataset/images/spaced.png");
     LinkedList *chars = segmentation(source);
 
-    img_save(source, "bw.png");
+    // img_save(source, "bw.png");
 
     char *string = "LoremIpsumissimplydummytextoftheprintingandtypesettingindustry.LoremIpsumhasbeentheindustry'sstandarddummytexteversincethe1500s,whenanunknownprintertookagalleyoftypeandscrambledittomakeatypespecimenbook.Ithassurvivednotonlyfivecenturies,butalsotheleapintoelectronictypesetting,remainingessentiallyunchanged.Itwaspopularisedinthe1960swiththereleaseofLetrasetsheetscontainingLoremIpsumpassages,andmorerecentlywithdesktoppublishingsoftwarelikeAldusPageMakerincludingversionsofLoremIpsum.Itisalongestablishedfactthatareaderwillbedistractedbythereadablecontentofapagewhenlookingatitslayout.ThepointofusingLoremIpsumisthatithasamore-or-lessnormaldistributionofletters,asopposedtousing'Contenthere,contenthere',makingitlooklikereadableEnglish.ManydesktoppublishingpackagesandwebpageeditorsnowuseLoremIpsumastheirdefaultmodeltext,andasearchfor'loremipsum'willuncovermanywebsitesstillintheirinfancy.Variousversionshaveevolvedovertheyears,sometimesbyaccident,sometimesonpurpose(injectedhumourandthelike).";
     int images_count = 0;
     Img **images = images_from_list(source, chars, string, &images_count);
-    print_image(images[270]);
-    printf("%c\n", images[270]->label);
+    // print_image(images[993]);
+    // printf("%c\n", images[993]->label);
     // printf("%d\n", images_count);
-    // NeuralNetwork *nn = create_nn_from_img(images, images_count);
+    NeuralNetwork *nn = create_nn_from_img(images, images_count);
 
     //print_image(images[0]);
     // printf("%c\n", images[0]->label);
