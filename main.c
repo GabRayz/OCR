@@ -23,6 +23,7 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
     /* 
     Train the neural network with the given set of images
     */
+    printf("Training...\n");
     double *results = malloc(sizeof(double) * cycles);
     
     for (int i = 0; i < cycles; i++)
@@ -38,8 +39,8 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
             nn_backProp(nn);
         
         results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
-        if (!learn)
-            printf("%c", nn_getResult(nn));
+        // if (!learn)
+        //     printf("%c", nn_getResult(nn));
     }
 
     double sum = 0;
@@ -75,7 +76,8 @@ NeuralNetwork *create_nn()
 NeuralNetwork *create_nn_from_img(Img **images, int images_count)
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 10000;
+    printf("Creating the neural network\n");
+    int cycles = 100;
 
     int layerSizes[] = {784, 25, 93};
     NeuralNetwork *nn = nn_init(layerSizes, 3);
@@ -166,7 +168,7 @@ int main()
     // printf("%c\n", images[993]->label);
     // printf("%d\n", images_count);
     NeuralNetwork *nn = create_nn_from_img(images, images_count);
-
+    nn_save(nn, "save/Helvetica.txt");
     //print_image(images[0]);
     // printf("%c\n", images[0]->label);
     // NeuralNetwork *nn = create_nn();

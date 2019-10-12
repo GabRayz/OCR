@@ -8,6 +8,7 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
 {
     NeuralNetwork *nn = malloc(sizeof(NeuralNetwork));
     nn->layerCount = layerCount;
+    nn->layerSizes = layerSizes;
 
     // Allocate the size of the Matrix arrays. One matrix per layer.
     nn->biaises = malloc(sizeof(Matrix *) * layerCount);
@@ -107,15 +108,15 @@ void nn_compute(NeuralNetwork *nn, double *pixels, int label)
         Set matrix y
         Compute the activations on each layer (nn_feedForward)
     */
-   
+
     nn_initFirstLayer(nn, pixels);
-    
+
     m_delete(nn->y);
 
     // Set the matrix of expected results
     nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 1);
     nn->y->content[label - 33][0] = 1.0;
-    
+
     nn_feedForward(nn);
 }
 
@@ -166,7 +167,8 @@ void nn_feedForward(NeuralNetwork *nn)
         // Store the product m*a in a temporary matrix
         Matrix *product = m_mult(nn->weights[l], nn->activations[l - 1]);
         nn->z[l] = m_add(product, nn->biaises[l]);
-        if (l == nn->layerCount - 1 && 0) {
+        if (l == nn->layerCount - 1 && 0)
+        {
             // Compute a softmax for the last layer
             // Softmax formula : Aj = exp(Zj) /  Sum_over_k(exp(Zk))
             Matrix *exp = m_exp(nn->z[l]);
@@ -174,7 +176,9 @@ void nn_feedForward(NeuralNetwork *nn)
             nn->activations[l] = m_div(exp, sum);
             //printf("%lf\n", m_sum(nn->activations[l]));
             m_delete(exp);
-        }else {
+        }
+        else
+        {
             nn->activations[l] = m_sigmoid(nn->z[l]);
         }
 
@@ -193,7 +197,7 @@ void nn_backProp(NeuralNetwork *nn)
         m_delete(nn->errors[l]);
         m_delete(nn->dWeights[l]);
     }
-    
+
     // Compute the error on the output layer
     Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
     Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
@@ -247,4 +251,47 @@ double GaussianRand()
 
     double randStdNormal = sqrt(-2.0 * log(r1)) * sin(2.0 * M_PI * r2);
     return randStdNormal;
+}
+
+void nn_save(NeuralNetwork *nn, char *filepath)
+{
+    /* Save the network's parameters in a text file */
+    FILE *file = fopen(filepath, "w");
+    if (file == NULL)
+    {
+        printf("Error while saving the network\n");
+        exit(1);
+    }
+
+    // Write number of layer
+    fprintf(file, "%d;", nn->layerCount);
+    // Write layer sizes
+    for (int i = 0; i < nn->layerCount; i++)
+    {
+        fprintf(file, "%d;", nn->activations[i]->height);
+    }
+    // Write biaises
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        for (int n = 0; n < nn->activations[l]->height; n++)
+        {
+            fprintf(file, "%lf;", nn->biaises[l]->content[n][0]);
+        }
+    }
+    // Write weights
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        for (int y = 0; y < nn->weights[l]->height; y++)
+        {
+            for (int x = 0; x < nn->weights[l]->width; x++)
+            {
+                fprintf(file, "%lf;", nn->weights[l]->content[y][x]);
+            }
+            
+        }
+        
+    }
+    printf("Neural network saved at : %s", filepath);
+
+    fclose(file);
 }
