@@ -77,7 +77,7 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
 {
     // Create a neural network, initialize it randomly, and make it learn
     printf("Creating the neural network\n");
-    int cycles = 1000;
+    int cycles = 10000;
     int* layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
     layerSizes[1] = 25;
@@ -154,41 +154,22 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
 
 int main()
 {
-    // init_window();
-    // return 0;
-    // read_dataset2();
     MagickWandGenesis();
     Img *source = img_import("dataset/images/spaced.png");
     LinkedList *chars = segmentation(source);
 
-    // img_save(source, "bw.png");
-
     char *string = "LoremIpsumissimplydummytextoftheprintingandtypesettingindustry.LoremIpsumhasbeentheindustry'sstandarddummytexteversincethe1500s,whenanunknownprintertookagalleyoftypeandscrambledittomakeatypespecimenbook.Ithassurvivednotonlyfivecenturies,butalsotheleapintoelectronictypesetting,remainingessentiallyunchanged.Itwaspopularisedinthe1960swiththereleaseofLetrasetsheetscontainingLoremIpsumpassages,andmorerecentlywithdesktoppublishingsoftwarelikeAldusPageMakerincludingversionsofLoremIpsum.Itisalongestablishedfactthatareaderwillbedistractedbythereadablecontentofapagewhenlookingatitslayout.ThepointofusingLoremIpsumisthatithasamore-or-lessnormaldistributionofletters,asopposedtousing'Contenthere,contenthere',makingitlooklikereadableEnglish.ManydesktoppublishingpackagesandwebpageeditorsnowuseLoremIpsumastheirdefaultmodeltext,andasearchfor'loremipsum'willuncovermanywebsitesstillintheirinfancy.Variousversionshaveevolvedovertheyears,sometimesbyaccident,sometimesonpurpose(injectedhumourandthelike).";
     int images_count = 0;
     Img **images = images_from_list(source, chars, string, &images_count);
-    // print_image(images[993]);
-    // printf("%c\n", images[993]->label);
-    // printf("%d\n", images_count);
-    NeuralNetwork *nn = create_nn_from_img(images, images_count);
     
+    NeuralNetwork *nn = create_nn_from_img(images, images_count);
+    Img *testimg = img_from_block(source, chars->start->block);
+
     nn_saveBinary(nn, "save/HelveticaB");
-    nn_save(nn, "save/Helvetica.txt");
 
     NeuralNetwork *test = nn_load("save/HelveticaB");
-    nn_save(test, "save/resave.txt");
-    //print_image(images[0]);
-    // printf("%c\n", images[0]->label);
-    // NeuralNetwork *nn = create_nn();
-    // Img *m = img_from_block(source, chars->start->next->next->next->next->next->next->block);
-    // remove_white_margin(source, chars->start->next->next->next->next->next->next->block);
-    // Img *m = img_resize(source, chars->start->next->next->next->next->next->next->block, 28, 28);
-    // img_save(m->pixels, m->width, m->height, "res.png");
 
-    // print_image(m);
-    // nn_compute(nn, m, 'm');
-    // printf("%c\n", nn_getResult(nn));
-    // char *res = send_to_cerveau(source, chars, nn);
-    // printf("%s\n", res);
+    printf("%s\n", send_to_cerveau(source, chars, test));
 
     return 0;
 }
