@@ -55,7 +55,7 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
 NeuralNetwork *create_nn()
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 10000;
+    int cycles = 1000;
     Img **images = read_dataset2();
     // Img **images = read_dataset(COUNT);
     printf("loaded paths\n");
@@ -77,9 +77,11 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
 {
     // Create a neural network, initialize it randomly, and make it learn
     printf("Creating the neural network\n");
-    int cycles = 100;
-
-    int layerSizes[] = {784, 25, 93};
+    int cycles = 1000;
+    int* layerSizes = malloc(sizeof(int) * 3);
+    layerSizes[0] = 784;
+    layerSizes[1] = 25;
+    layerSizes[2] = 93;
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
     train(nn, images, images_count, cycles, 1);
@@ -168,7 +170,12 @@ int main()
     // printf("%c\n", images[993]->label);
     // printf("%d\n", images_count);
     NeuralNetwork *nn = create_nn_from_img(images, images_count);
+    
+    nn_saveBinary(nn, "save/HelveticaB");
     nn_save(nn, "save/Helvetica.txt");
+
+    NeuralNetwork *test = nn_load("save/HelveticaB");
+    nn_save(test, "save/resave.txt");
     //print_image(images[0]);
     // printf("%c\n", images[0]->label);
     // NeuralNetwork *nn = create_nn();

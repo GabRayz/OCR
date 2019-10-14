@@ -287,11 +287,95 @@ void nn_save(NeuralNetwork *nn, char *filepath)
             {
                 fprintf(file, "%lf;", nn->weights[l]->content[y][x]);
             }
-            
         }
-        
     }
-    printf("Neural network saved at : %s", filepath);
+    printf("Neural network saved at : %s\n", filepath);
 
     fclose(file);
+}
+
+void nn_saveBinary(NeuralNetwork *nn, char *filepath)
+{
+    printf("Saving in binary mode...\n");
+    FILE *file = fopen(filepath, "wb");
+    if (file == NULL)
+    {
+        printf("Error while saving the network\n");
+        exit(1);
+    }
+
+    // Write number of layer
+    fwrite(&nn->layerCount, sizeof(int), 1, file);
+
+    // Write layer sizes
+    for (int i = 0; i < nn->layerCount; i++)
+    {
+        fwrite(&nn->activations[i]->height, sizeof(int), nn->layerCount, file);
+    }
+    printf("Writing biaises...\n");
+    // Write biaises
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        for (int n = 0; n < nn->activations[l]->height; n++)
+        {
+            fwrite(&nn->biaises[l]->content[n][0], sizeof(double), nn->biaises[l]->height, file);
+        }
+    }
+    printf("Writing weights...\n");
+    // Write weights
+    for (int l = 1; l < nn->layerCount; l++)
+    {
+        for (int y = 0; y < nn->weights[l]->height; y++)
+        {
+            fwrite(&nn->weights[l]->content[y], sizeof(double), nn->weights[l]->width, file);
+        }
+    }
+
+    printf("Neural network saved at : %s\n", filepath);
+
+    fclose(file);
+    return;
+}
+
+NeuralNetwork *nn_load(char *filepath)
+{
+    printf("Loading the network...\n");
+    FILE *file = fopen(filepath, "rb");
+    if (file == NULL)
+    {
+        printf("Error while loading the network\n");
+        exit(1);
+    }
+    printf("Load layer count...\n");
+    // Reading layer count
+    int layerCount;
+    fread(&layerCount, sizeof(int), 1, file);
+
+    printf("Load layer sizes...\n");
+    int *layerSizes = malloc(sizeof(int) * layerCount);
+    fread(layerSizes, sizeof(int) * layerCount, 1, file);
+    printf("Layer sizes 2 : %d\n", layerSizes[2]);
+
+    printf("Creating nn\n");
+    NeuralNetwork *nn = nn_init(layerSizes, layerCount);
+
+    printf("Load biaises...\n");
+    for (int l = 1; l < layerCount; l++)
+    {
+        for (int y = 0; y < nn->biaises[l]->height; y++)
+        {
+            fread(nn->biaises[l]->content[y], sizeof(double), 1, file);
+        }
+    }
+    printf("Load weights...\n");
+    for (int l = 1; l < layerCount; l++)
+    {
+        for (int y = 0; y < nn->weights[l]->height; y++)
+        {
+            fread(nn->weights[l]->content[y], sizeof(double), nn->weights[l]->width, file);
+        }
+    }
+
+    fclose(file);
+    return nn;
 }
