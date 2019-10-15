@@ -61,7 +61,7 @@ Img **read_dataset2()
     Read the dataset/training directory to get images names
      */
     printf("Reading dataset...\n");
-    int dataCount = 1016 * 62;
+    int dataCount = 1016 * 36;
     Img **images = malloc(sizeof(Img *) * dataCount);
     char *prefix = "./dataset/fonts/";
     char **files = malloc(sizeof(char *) * dataCount);
@@ -76,7 +76,7 @@ Img **read_dataset2()
     readdir(dataset);
 
     int i = 0;
-    while ((dir = readdir(dataset)) != NULL && i < 62)
+    while ((dir = readdir(dataset)) != NULL && i < 36)
     {
         // Prevent hiddent files
         if (dir->d_name[0] == '.')
