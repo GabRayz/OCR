@@ -91,7 +91,7 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
     train(nn, images, images_count, cycles, 1);
-    train(nn, images, images_count, cycles, 0);
+    train(nn, images, images_count, 1000, 0);
     return nn;
 }
 
@@ -120,12 +120,12 @@ LinkedList *segmentation(Img *source)
 
 char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 {
-    char *res = malloc(sizeof(char) * list_length(chars));
+    char *res = malloc(sizeof(char) * list_length(chars) + 1);
     Node *n = chars->start;
     int i = 0;
     while (n)
     {
-        remove_white_margin(source, n->block);
+        // remove_white_margin(source, n->block);
         Img *resized = img_resize(source, n->block, 28, 28);
         // Send to the neural network
         nn_compute(nn, resized->pixels, 100);
@@ -133,6 +133,7 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
         n = n->next;
         i++;
     }
+    res[i] = '\0';
 
     return res;
 }
@@ -170,6 +171,10 @@ int main()
 
     printf("Creating NN...\n");
     NeuralNetwork *nn = create_nn();
+
+    char* res = send_to_cerveau(source, chars, nn);
+
+    printf("%s\n", res);
 
     return 0;
 }
