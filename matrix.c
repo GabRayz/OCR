@@ -23,7 +23,7 @@ Matrix *m_init(int height, int width)
     m->content = malloc(height * sizeof(double *)); // Size of an array of float, height times
 
     // Create a single big buffer to reduce the number of system calls
-    double* buffer = calloc(width * height, sizeof(double));
+    double *buffer = calloc(width * height, sizeof(double));
 
     for (int y = 0; y < height; y++)
     {
@@ -55,8 +55,8 @@ void m_delete(Matrix *m)
         return;
 
     free(m->content[0]); // Free whole buffer
-    free(m->content); // Free the array of array
-    free(m);          // Free the struct
+    free(m->content);    // Free the array of array
+    free(m);             // Free the struct
 }
 
 void m_print(Matrix *m)
@@ -73,11 +73,7 @@ void m_print(Matrix *m)
 
 Matrix *m_add(Matrix *a, Matrix *b)
 {
-    if (a->width != b->width || a->height != b->height)
-    {
-        printf("Matrix addiction: Sizes are not valid\n");
-        exit(1);
-    }
+    assert(a->width == b->width && a->height == b->height);
 
     Matrix *res = m_init(a->height, a->width);
 
@@ -94,11 +90,7 @@ Matrix *m_add(Matrix *a, Matrix *b)
 
 Matrix *m_sub(Matrix *a, Matrix *b)
 {
-    if (a->width != b->width || a->height != b->height)
-    {
-        printf("Matrix substraction: Sizes are not valid\n");
-        exit(1);
-    }
+    assert(a->width == b->width && a->height == b->height);
 
     Matrix *res = m_init(a->height, a->width);
 
@@ -115,11 +107,7 @@ Matrix *m_sub(Matrix *a, Matrix *b)
 
 Matrix *m_mult(Matrix *a, Matrix *b)
 {
-    if (a->width != b->height)
-    {
-        printf("Matrix product: Sizes are not valid\n");
-        exit(1);
-    }
+    assert(a->width == b->height);
 
     Matrix *res = m_init(a->height, b->width);
 
@@ -183,11 +171,7 @@ Matrix *m_div(Matrix *m, double value)
 
 Matrix *m_hadamard(Matrix *a, Matrix *b)
 {
-    if (a->width != b->width || a->height != b->height)
-    {
-        printf("m_hadamard: Sizes not valid.\n");
-        exit(1);
-    }
+    assert(a->width == b->width && a->height == b->height);
 
     Matrix *res = m_init(a->height, a->width);
 
@@ -299,21 +283,11 @@ float m_sum(Matrix *m)
 
 Matrix *m_average(Matrix **list, int count)
 {
-    if (count < 1)
-    {
-        printf("Matrix average: List must not be empty\n");
-        exit(1);
-    }
+    assert(count > 0);
     int height = list[0]->height;
     int width = list[0]->width;
     for (int i = 0; i < count; i++)
-    {
-        if (list[i]->height != height || list[i]->width != width)
-        {
-            printf("Matrix average: All matrices of the list must have the same size");
-            exit(2);
-        }
-    }
+        assert(list[i]->height == height && list[i]->width == width);
 
     Matrix *res = m_init(list[0]->height, list[0]->width);
 

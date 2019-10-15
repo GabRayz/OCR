@@ -11,10 +11,10 @@
 #include <assert.h>
 #include "dataset.h"
 
-
 // #define COUNT 36
 
-void debug() {
+void debug()
+{
     printf("Debug\n");
 }
 
@@ -24,10 +24,13 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
     Train the neural network with the given set of images
     */
     printf("Training...\n");
+    fputs("\e[?25l", stdout); /* hide the cursor */
+
     double *results = malloc(sizeof(double) * cycles);
-    
     for (int i = 0; i < cycles; i++)
     {
+
+        printf("\r%d / %d", i + 1, cycles);
         unsigned int index = learn ? rand() % images_count : i % images_count;
         Img *img = images[index];
         // print_image(img);
@@ -37,11 +40,13 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
         nn_compute(nn, img->pixels, (int)img->label);
         if (learn)
             nn_backProp(nn);
-        
+
         results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
         // if (!learn)
         //     printf("%c", nn_getResult(nn));
     }
+    fputs("\e[?25h", stdout); /* show the cursor */
+    printf("\n");
 
     double sum = 0;
     for (int i = 0; i < cycles; i++)
@@ -55,12 +60,12 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
 NeuralNetwork *create_nn()
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 100000;
+    int cycles = 45000;
     Img **images = read_dataset2();
     printf("Loaded paths, loading images...\n");
     dataset_to_pixels(images, 1016 * 36);
 
-    int* layerSizes = malloc(sizeof(int) * 3);
+    int *layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
     layerSizes[1] = 256;
     layerSizes[2] = 93;
@@ -79,7 +84,7 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
     // Create a neural network, initialize it randomly, and make it learn
     printf("Creating the neural network\n");
     int cycles = 10000;
-    int* layerSizes = malloc(sizeof(int) * 3);
+    int *layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
     layerSizes[1] = 25;
     layerSizes[2] = 93;
@@ -155,14 +160,14 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
 
 int main()
 {
-    init_window();
-    return 0;
+    // init_window();
+    // return 0;
     MagickWandGenesis();
     printf("Importing image...\n");
     Img *source = img_import("dataset/images/spaced.png");
     printf("Segmenting image...\n");
     LinkedList *chars = segmentation(source);
-    
+
     printf("Creating NN...\n");
     NeuralNetwork *nn = create_nn();
 

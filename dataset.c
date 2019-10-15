@@ -61,6 +61,7 @@ Img **read_dataset2()
     Read the dataset/training directory to get images names
      */
     printf("Reading dataset...\n");
+
     int dataCount = 1016 * 36;
     Img **images = malloc(sizeof(Img *) * dataCount);
     char *prefix = "./dataset/fonts/";
@@ -105,7 +106,6 @@ Img **read_dataset2()
             images[index] = img_init(28, 28);
             images[index]->filepath = fileName;
             images[index]->label = label;
-
             j++;
         }
 
@@ -122,9 +122,12 @@ Img **read_dataset2()
 void dataset_to_pixels(Img **images, int dataCount)
 {
 
+    fputs("\e[?25l", stdout); /* hide the cursor */
+
     for (int i = 0; i < dataCount && images[i]; i++)
     {
 
+        printf("\r%d / %d", i + 1, 1016 * 36);
         MagickWand *mw = NewMagickWand();
         Img *image = images[i];
 
@@ -140,4 +143,7 @@ void dataset_to_pixels(Img **images, int dataCount)
             printf("FAILED: %s\n", image->filepath);
         DestroyMagickWand(mw);
     }
+
+    fputs("\e[?25h", stdout); /* show the cursor */
+    printf("\n");
 }
