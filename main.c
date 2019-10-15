@@ -55,18 +55,19 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
 NeuralNetwork *create_nn()
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 1000;
+    int cycles = 250000;
     Img **images = read_dataset2();
-    // Img **images = read_dataset(COUNT);
-    printf("loaded paths\n");
+    printf("Loaded paths, loading images...\n");
     dataset_to_pixels(images, 1016 * 62);
-    printf("to pixels ok !\n");
-    // dataset_to_pixels(images, COUNT);
 
-    int layerSizes[] = {784, 20, 93};
+    int* layerSizes = malloc(sizeof(int) * 3);
+    layerSizes[0] = 784;
+    layerSizes[1] = 25;
+    layerSizes[2] = 93;
+
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
-    printf("let's train\n");
+    printf("Let's train !\n");
 
     train(nn, images, 1016 *  62, cycles, 1);
     train(nn, images, 1016 *  62, cycles, 0);
@@ -155,21 +156,13 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
 int main()
 {
     MagickWandGenesis();
+    printf("Importing image...\n");
     Img *source = img_import("dataset/images/spaced.png");
+    printf("Segmenting image...\n");
     LinkedList *chars = segmentation(source);
-
-    char *string = "LoremIpsumissimplydummytextoftheprintingandtypesettingindustry.LoremIpsumhasbeentheindustry'sstandarddummytexteversincethe1500s,whenanunknownprintertookagalleyoftypeandscrambledittomakeatypespecimenbook.Ithassurvivednotonlyfivecenturies,butalsotheleapintoelectronictypesetting,remainingessentiallyunchanged.Itwaspopularisedinthe1960swiththereleaseofLetrasetsheetscontainingLoremIpsumpassages,andmorerecentlywithdesktoppublishingsoftwarelikeAldusPageMakerincludingversionsofLoremIpsum.Itisalongestablishedfactthatareaderwillbedistractedbythereadablecontentofapagewhenlookingatitslayout.ThepointofusingLoremIpsumisthatithasamore-or-lessnormaldistributionofletters,asopposedtousing'Contenthere,contenthere',makingitlooklikereadableEnglish.ManydesktoppublishingpackagesandwebpageeditorsnowuseLoremIpsumastheirdefaultmodeltext,andasearchfor'loremipsum'willuncovermanywebsitesstillintheirinfancy.Variousversionshaveevolvedovertheyears,sometimesbyaccident,sometimesonpurpose(injectedhumourandthelike).";
-    int images_count = 0;
-    Img **images = images_from_list(source, chars, string, &images_count);
     
-    NeuralNetwork *nn = create_nn_from_img(images, images_count);
-    Img *testimg = img_from_block(source, chars->start->block);
-
-    nn_saveBinary(nn, "save/HelveticaB");
-
-    NeuralNetwork *test = nn_load("save/HelveticaB");
-
-    printf("%s\n", send_to_cerveau(source, chars, test));
+    printf("Creating NN...\n");
+    NeuralNetwork *nn = create_nn();
 
     return 0;
 }
