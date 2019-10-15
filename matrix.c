@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "matrix.h"
+#include <assert.h>
 
 /* 
     Matrices declaration and operations
@@ -13,15 +14,21 @@
 
 Matrix *m_init(int height, int width)
 {
+    assert(height > 0 && width > 0);
+
     // Allocate the right size
     Matrix *m = malloc(sizeof(Matrix));
     m->height = height;
     m->width = width;
-    m->content = calloc(height, sizeof(double *)); // Size of an array of float, height times
+    m->content = malloc(height * sizeof(double *)); // Size of an array of float, height times
+
+    // Create a single big buffer to reduce the number of system calls
+    double* buffer = calloc(width * height, sizeof(double));
 
     for (int y = 0; y < height; y++)
     {
-        m->content[y] = calloc(width, sizeof(double)); // Allocate the size of float, width times
+        // The pointer is shifted by width for each iteration
+        m->content[y] = buffer + y * width;
     }
 
     return m;
@@ -47,12 +54,7 @@ void m_delete(Matrix *m)
     if (m == NULL)
         return;
 
-    // Delete the matrix to free memory space
-    for (int y = 0; y < m->height; y++)
-    {
-        free(m->content[y]); // Free all float arrays
-    }
-
+    free(m->content[0]); // Free whole buffer
     free(m->content); // Free the array of array
     free(m);          // Free the struct
 }
