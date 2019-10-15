@@ -15,7 +15,7 @@ void init_window(){
 	int width = 843;
 	int pixel = 32;
 
-	screen = SDL_SetVideoMode(width,height,pixel,SDL_HWSURFACE );
+	screen = SDL_SetVideoMode(width,height,pixel,SDL_HWSURFACE);
 	if(screen == NULL){
 		//Error
 	}
@@ -100,6 +100,14 @@ void init_window(){
 	SDL_BlitSurface(settings,NULL,screen,&settings_pos);
 	SDL_FreeSurface(settings);
 
+	SDL_Surface *quit;
+	quit = TTF_RenderText_Blended(font,"QUIT",font_color);
+	SDL_Rect quit_pos;
+	quit_pos.x = menu_x;
+	quit_pos.y = menu_y + menu_step * 3;
+	SDL_BlitSurface(quit,NULL,screen,&quit_pos);
+	SDL_FreeSurface(quit);
+
 	
 
 	//Refresh the screen
@@ -152,33 +160,17 @@ void init_window(){
 			   {
 				   continuer = 0;
 			   }
+			// If clicked on QUIT
+			else if(event.button.y > quit_pos.y 
+			   && event.button.y <= quit_pos.y+btn_height
+			   && event.button.x > quit_pos.x 
+			   && event.button.x <= quit_pos.x+btn_width)
+			   {
+				   continuer = 0;
+			   }
+			
         }
     }
 	TTF_Quit();
 	SDL_Quit();
-}
-
-void pause()
-{
-    int continuer = 1;
-    SDL_Event event;
- 
-    while (continuer)
-    {
-        SDL_WaitEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                continuer = 0;
-				break;
-			case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
-            {
-                case SDLK_ESCAPE: // Esc to quit the program
-                    continuer = 0;
-                    break;
-            }
-            break;
-        }
-    }
 }
