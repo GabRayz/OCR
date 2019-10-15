@@ -18,6 +18,6 @@ Img *img_import(char *filepath);
 void print_image(Img *image);
 void block_print(Img *source, Block *block);
 double *img_grayscale(double *pixels, int size);
-void img_save(double *pixels, int width, int height, char *filepath);
+void img_save(Img *img, char *filepath);
 Img *img_resize(Img *source, Block *block, int width, int height);
 #endif

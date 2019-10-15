@@ -82,7 +82,7 @@ double *img_grayscale(double *pixels, int size)
     }
 
     // Convert into black & white
-    float threshold = 0.5;
+    float threshold = 0.14;
     for (int i = 0; i < size / 3; i++)
     {
         grayscale[i] = (grayscale[i] < threshold) ? 0 : 1;
@@ -90,13 +90,13 @@ double *img_grayscale(double *pixels, int size)
     return grayscale;
 }
 
-void img_save(double *pixels, int width, int height, char *filepath)
+void img_save(Img *img, char *filepath)
 {
     MagickWand *wand = NewMagickWand();
     PixelWand *pixel = NewPixelWand();
-    MagickNewImage(wand, width, height, pixel);
+    MagickNewImage(wand, img->width, img->height, pixel);
     ClearPixelWand(pixel);
-    if (MagickImportImagePixels(wand, 0, 0, width, height, "I", DoublePixel, pixels) == MagickTrue)
+    if (MagickImportImagePixels(wand, 0, 0, img->width, img->height, "I", DoublePixel, img->pixels) == MagickTrue)
     {
         if (MagickWriteImage(wand, filepath) == MagickTrue)
         {

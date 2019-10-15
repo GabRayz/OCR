@@ -60,6 +60,7 @@ Img **read_dataset2()
     /* 
     Read the dataset/training directory to get images names
      */
+    printf("Reading dataset...\n");
     int dataCount = 1016 * 62;
     Img **images = malloc(sizeof(Img *) * dataCount);
     char *prefix = "./dataset/fonts/";
@@ -77,7 +78,12 @@ Img **read_dataset2()
     int i = 0;
     while ((dir = readdir(dataset)) != NULL && i < 62)
     {
+        // Prevent hiddent files
+        if (dir->d_name[0] == '.')
+            continue;
+
         char *folderName = concat(prefix, dir->d_name);
+
         char *tmp = concat(folderName, "/");
         DIR *character = opendir(folderName);
         int num = atoi(dir->d_name);
@@ -89,6 +95,9 @@ Img **read_dataset2()
         int j = 0;
         while ((dir2 = readdir(character)) != NULL && j < 1016)
         {
+            // Prevent hiddent files
+            if (dir->d_name[0] == '.')
+                continue;
             char *fileName = concat(tmp, dir2->d_name);
 
             // Store the file in the img
@@ -112,10 +121,11 @@ Img **read_dataset2()
 
 void dataset_to_pixels(Img **images, int dataCount)
 {
-    MagickWand *mw = NewMagickWand();
 
     for (int i = 0; i < dataCount && images[i]; i++)
     {
+
+        MagickWand *mw = NewMagickWand();
         Img *image = images[i];
 
         if (MagickReadImage(mw, image->filepath) == MagickTrue)
@@ -128,7 +138,6 @@ void dataset_to_pixels(Img **images, int dataCount)
         }
         else
             printf("FAILED: %s\n", image->filepath);
+        DestroyMagickWand(mw);
     }
-
-    DestroyMagickWand(mw);
 }
