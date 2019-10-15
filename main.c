@@ -155,6 +155,8 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
 
 int main()
 {
+    init_window();
+    return 0;
     MagickWandGenesis();
     printf("Importing image...\n");
     Img *source = img_import("dataset/images/spaced.png");

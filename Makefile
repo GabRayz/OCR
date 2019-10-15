@@ -8,7 +8,7 @@ OBJS = $(SRCS:.c=.o)
 
 CFLAGS = -Wall -Wextra -std=c99 `pkg-config --cflags MagickWand`
 
-CLIBS = `pkg-config --libs MagickWand sdl` -lSDL_image
+CLIBS = `pkg-config --libs MagickWand sdl` -lSDL_image -lSDL_ttf
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CLIBS) -lm
