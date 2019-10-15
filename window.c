@@ -15,7 +15,7 @@ void init_window(){
 	int width = 480;
 	int pixel = 32;
 
-	screen = SDL_SetVideoMode(width,height,pixel,SDL_HWSURFACE | SDL_RESIZABLE);
+	screen = SDL_SetVideoMode(width,height,pixel,SDL_HWSURFACE );
 	if(screen == NULL){
 		//Error
 	}
@@ -68,6 +68,15 @@ void pause()
         {
             case SDL_QUIT:
                 continuer = 0;
+				break;
+			case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+                case SDLK_ESCAPE: // Esc to quit the program
+                    continuer = 0;
+                    break;
+            }
+            break;
         }
     }
 }
