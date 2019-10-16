@@ -1,8 +1,7 @@
 ocr
 *.o
 .vscode
-dataset/easy
-dataset/training
+dataset/
 .DS_Store
 res.png
 res/
