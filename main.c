@@ -60,10 +60,10 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
 NeuralNetwork *create_nn()
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 45000;
+    int cycles = 90000;
     Img **images = read_dataset2();
     printf("Loaded paths, loading images...\n");
-    dataset_to_pixels(images, 1016 * 36);
+    dataset_to_pixels(images, 1016 * 62);
 
     int *layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
@@ -74,8 +74,8 @@ NeuralNetwork *create_nn()
     nn_setupRandom(nn);
     printf("Let's train !\n");
 
-    train(nn, images, 1016 * 36, cycles, 1);
-    train(nn, images, 1016 * 36, cycles, 0);
+    train(nn, images, 1016 * 62, cycles, 1);
+    train(nn, images, 1016 * 62, 10000, 0);
     return nn;
 }
 
@@ -125,7 +125,7 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
     int i = 0;
     while (n)
     {
-        // remove_white_margin(source, n->block);
+        remove_white_margin(source, n->block);
         Img *resized = img_resize(source, n->block, 28, 28);
         // Send to the neural network
         nn_compute(nn, resized->pixels, 100);

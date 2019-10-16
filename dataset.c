@@ -62,7 +62,7 @@ Img **read_dataset2()
      */
     printf("Reading dataset...\n");
 
-    int dataCount = 1016 * 36;
+    int dataCount = 1016 * 62;
     Img **images = malloc(sizeof(Img *) * dataCount);
     char *prefix = "./dataset/fonts/";
     char **files = malloc(sizeof(char *) * dataCount);
@@ -77,7 +77,7 @@ Img **read_dataset2()
     readdir(dataset);
 
     int i = 0;
-    while ((dir = readdir(dataset)) != NULL && i < 36)
+    while ((dir = readdir(dataset)) != NULL && i < 62)
     {
         // Prevent hiddent files
         if (dir->d_name[0] == '.')
@@ -127,7 +127,7 @@ void dataset_to_pixels(Img **images, int dataCount)
     for (int i = 0; i < dataCount && images[i]; i++)
     {
 
-        printf("\r%d / %d", i + 1, 1016 * 36);
+        printf("\r%d / %d", i + 1, 1016 * 62);
         MagickWand *mw = NewMagickWand();
         Img *image = images[i];
 
