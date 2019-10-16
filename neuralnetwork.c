@@ -239,8 +239,12 @@ void nn_backProp(NeuralNetwork *nn)
     // Apply modifiers
     for (int l = 1; l < nn->layerCount; l++)
     {
+        Matrix *oldBiaises = nn->biaises[l];
+        Matrix *oldWeights = nn->weights[l];
         nn->biaises[l] = m_sub(nn->biaises[l], nn->errors[l]);
         nn->weights[l] = m_sub(nn->weights[l], nn->dWeights[l]);
+        m_delete(oldBiaises);
+        m_delete(oldWeights);
     }
 }
 

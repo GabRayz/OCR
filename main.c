@@ -11,10 +11,10 @@
 #include <assert.h>
 #include "dataset.h"
 
-
 // #define COUNT 36
 
-void debug() {
+void debug()
+{
     printf("Debug\n");
 }
 
@@ -24,10 +24,13 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
     Train the neural network with the given set of images
     */
     printf("Training...\n");
+    fputs("\e[?25l", stdout); /* hide the cursor */
+
     double *results = malloc(sizeof(double) * cycles);
-    
     for (int i = 0; i < cycles; i++)
     {
+
+        printf("\r%d / %d", i + 1, cycles);
         unsigned int index = learn ? rand() % images_count : i % images_count;
         Img *img = images[index];
         // print_image(img);
@@ -37,11 +40,13 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
         nn_compute(nn, img->pixels, (int)img->label);
         if (learn)
             nn_backProp(nn);
-        
+
         results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
         // if (!learn)
         //     printf("%c", nn_getResult(nn));
     }
+    fputs("\e[?25h", stdout); /* show the cursor */
+    printf("\n");
 
     double sum = 0;
     for (int i = 0; i < cycles; i++)
@@ -55,21 +60,22 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
 NeuralNetwork *create_nn()
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 1000;
+    int cycles = 45000;
     Img **images = read_dataset2();
-    // Img **images = read_dataset(COUNT);
-    printf("loaded paths\n");
-    dataset_to_pixels(images, 1016 * 62);
-    printf("to pixels ok !\n");
-    // dataset_to_pixels(images, COUNT);
+    printf("Loaded paths, loading images...\n");
+    dataset_to_pixels(images, 1016 * 36);
 
-    int layerSizes[] = {784, 20, 93};
+    int *layerSizes = malloc(sizeof(int) * 3);
+    layerSizes[0] = 784;
+    layerSizes[1] = 256;
+    layerSizes[2] = 93;
+
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
-    printf("let's train\n");
+    printf("Let's train !\n");
 
-    train(nn, images, 1016 *  62, cycles, 1);
-    train(nn, images, 1016 *  62, cycles, 0);
+    train(nn, images, 1016 * 36, cycles, 1);
+    train(nn, images, 1016 * 36, cycles, 0);
     return nn;
 }
 
@@ -78,14 +84,14 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
     // Create a neural network, initialize it randomly, and make it learn
     printf("Creating the neural network\n");
     int cycles = 10000;
-    int* layerSizes = malloc(sizeof(int) * 3);
+    int *layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
     layerSizes[1] = 25;
     layerSizes[2] = 93;
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
     train(nn, images, images_count, cycles, 1);
-    train(nn, images, images_count, cycles, 0);
+    train(nn, images, images_count, 1000, 0);
     return nn;
 }
 
@@ -114,12 +120,12 @@ LinkedList *segmentation(Img *source)
 
 char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 {
-    char *res = malloc(sizeof(char) * list_length(chars));
+    char *res = malloc(sizeof(char) * list_length(chars) + 1);
     Node *n = chars->start;
     int i = 0;
     while (n)
     {
-        remove_white_margin(source, n->block);
+        // remove_white_margin(source, n->block);
         Img *resized = img_resize(source, n->block, 28, 28);
         // Send to the neural network
         nn_compute(nn, resized->pixels, 100);
@@ -127,6 +133,7 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
         n = n->next;
         i++;
     }
+    res[i] = '\0';
 
     return res;
 }
@@ -154,22 +161,20 @@ Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
 
 int main()
 {
+    // init_window();
+    // return 0;
     MagickWandGenesis();
+    printf("Importing image...\n");
     Img *source = img_import("dataset/images/spaced.png");
+    printf("Segmenting image...\n");
     LinkedList *chars = segmentation(source);
 
-    char *string = "LoremIpsumissimplydummytextoftheprintingandtypesettingindustry.LoremIpsumhasbeentheindustry'sstandarddummytexteversincethe1500s,whenanunknownprintertookagalleyoftypeandscrambledittomakeatypespecimenbook.Ithassurvivednotonlyfivecenturies,butalsotheleapintoelectronictypesetting,remainingessentiallyunchanged.Itwaspopularisedinthe1960swiththereleaseofLetrasetsheetscontainingLoremIpsumpassages,andmorerecentlywithdesktoppublishingsoftwarelikeAldusPageMakerincludingversionsofLoremIpsum.Itisalongestablishedfactthatareaderwillbedistractedbythereadablecontentofapagewhenlookingatitslayout.ThepointofusingLoremIpsumisthatithasamore-or-lessnormaldistributionofletters,asopposedtousing'Contenthere,contenthere',makingitlooklikereadableEnglish.ManydesktoppublishingpackagesandwebpageeditorsnowuseLoremIpsumastheirdefaultmodeltext,andasearchfor'loremipsum'willuncovermanywebsitesstillintheirinfancy.Variousversionshaveevolvedovertheyears,sometimesbyaccident,sometimesonpurpose(injectedhumourandthelike).";
-    int images_count = 0;
-    Img **images = images_from_list(source, chars, string, &images_count);
-    
-    NeuralNetwork *nn = create_nn_from_img(images, images_count);
-    Img *testimg = img_from_block(source, chars->start->block);
+    printf("Creating NN...\n");
+    NeuralNetwork *nn = create_nn();
 
-    nn_saveBinary(nn, "save/HelveticaB");
+    char* res = send_to_cerveau(source, chars, nn);
 
-    NeuralNetwork *test = nn_load("save/HelveticaB");
-
-    printf("%s\n", send_to_cerveau(source, chars, test));
+    printf("%s\n", res);
 
     return 0;
 }
