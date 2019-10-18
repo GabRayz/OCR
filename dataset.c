@@ -223,6 +223,7 @@ LinkedList *read_dataset3(char *filepath)
     int i = 0;
     while ((file = readdir(dir)) != NULL)
     {
+        // Skip hidden files
         if (file->d_name[0] == '.') continue;
         // Store the file in the img
         Img *image = img_init(28, 28);

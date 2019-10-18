@@ -2,6 +2,7 @@
 # define NEURALNETWORK_H
 
 #include "matrix.h"
+#include "image.h"
 
 typedef struct _NeuralNetwork {
     int layerCount;
@@ -35,9 +36,9 @@ void nn_backProp(NeuralNetwork *nn);
 double GaussianRand();
 char nn_getResult(NeuralNetwork *nn);
 double nn_getCost(NeuralNetwork *nn);
-void nn_save(NeuralNetwork *nn, char *filepath);
 void nn_saveBinary(NeuralNetwork *nn, char *filepath);
 NeuralNetwork *nn_load(char *filepath);
+void train(NeuralNetwork *nn, Img **images, int images_count, int cycles);
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846

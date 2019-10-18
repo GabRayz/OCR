@@ -12,41 +12,6 @@
 #include <assert.h>
 #include "dataset.h"
 
-void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
-{
-    /* 
-    Train the neural network with the given set of images
-    */
-    printf("Training...\n");
-    fputs("\e[?25l", stdout); /* hide the cursor */
-    double sum = 0;
-    double accuracy = 0;
-    for (int i = 0; i < cycles; i++)
-    {
-        if (i % 1000 == 0)
-        {
-            // Stop training when accuracy is 100 or
-            double tmp = (sum / 1000) * 100;
-            // if (tmp < accuracy || tmp == 100)
-            //     break;
-            accuracy = tmp;
-            sum = 0;
-        }
-        printf("\r%d / %d, accuracy = %lf", i + 1, cycles, accuracy);
-        unsigned int index = rand() % images_count;
-        Img *img = images[index];
-        // print_image(img);
-        // printf("%c %d\n", img->label, img->label);
-
-        nn_compute(nn, img->pixels, (int)img->label);
-        nn_backProp(nn);
-
-        sum += (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
-    }
-    fputs("\e[?25h", stdout); /* show the cursor */
-    printf("\n");
-}
-
 NeuralNetwork *create_nn(char *filepath)
 {
     // Create a neural network, initialize it randomly, and make it learn

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "matrix.h"
 #include "neuralnetwork.h"
+#include "image.h"
 
 NeuralNetwork *nn_init(int *layerSizes, int layerCount)
 {
@@ -257,47 +258,6 @@ double GaussianRand()
     return randStdNormal;
 }
 
-void nn_save(NeuralNetwork *nn, char *filepath)
-{
-    /* Save the network's parameters in a text file */
-    FILE *file = fopen(filepath, "w");
-    if (file == NULL)
-    {
-        printf("Error while saving the network\n");
-        exit(1);
-    }
-
-    // Write number of layer
-    fprintf(file, "%d;", nn->layerCount);
-    // Write layer sizes
-    for (int i = 0; i < nn->layerCount; i++)
-    {
-        fprintf(file, "%d;", nn->activations[i]->height);
-    }
-    // Write biaises
-    for (int l = 1; l < nn->layerCount; l++)
-    {
-        for (int n = 0; n < nn->activations[l]->height; n++)
-        {
-            fprintf(file, "%lf;", nn->biaises[l]->content[n][0]);
-        }
-    }
-    // Write weights
-    for (int l = 1; l < nn->layerCount; l++)
-    {
-        for (int y = 0; y < nn->weights[l]->height; y++)
-        {
-            for (int x = 0; x < nn->weights[l]->width; x++)
-            {
-                fprintf(file, "%lf;", nn->weights[l]->content[y][x]);
-            }
-        }
-    }
-    printf("Neural network saved at : %s\n", filepath);
-
-    fclose(file);
-}
-
 void nn_saveBinary(NeuralNetwork *nn, char *filepath)
 {
     printf("Saving in binary mode...\n");
@@ -383,4 +343,39 @@ NeuralNetwork *nn_load(char *filepath)
     printf("Neural network loaded !\n");
     fclose(file);
     return nn;
+}
+
+void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
+{
+    /* 
+    Train the neural network with the given set of images
+    */
+    printf("Training...\n");
+    fputs("\e[?25l", stdout); /* hide the cursor */
+    double sum = 0;
+    double accuracy = 0;
+    for (int i = 0; i < cycles; i++)
+    {
+        if (i % 1000 == 0)
+        {
+            // Stop training when accuracy is 100 or
+            double tmp = (sum / 1000) * 100;
+            // if (tmp < accuracy || tmp == 100)
+            //     break;
+            accuracy = tmp;
+            sum = 0;
+        }
+        printf("\r%d / %d, accuracy = %lf", i + 1, cycles, accuracy);
+        unsigned int index = rand() % images_count;
+        Img *img = images[index];
+        // print_image(img);
+        // printf("%c %d\n", img->label, img->label);
+
+        nn_compute(nn, img->pixels, (int)img->label);
+        nn_backProp(nn);
+
+        sum += (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
+    }
+    fputs("\e[?25h", stdout); /* show the cursor */
+    printf("\n");
 }
