@@ -4,6 +4,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include "window.h"
+#include "image.h"
 
 void init_window(){
 
@@ -12,12 +13,14 @@ void init_window(){
 	SDL_Init(SDL_INIT_VIDEO);
 	TTF_Init();
 	
-	int height = 530;
-	int width = 843;
+	int height = 795;
+	int width = 563 + 702;
+
 
 	screen = SDL_CreateWindow("OCR - Les Croisillons",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width,height,SDL_WINDOW_SHOWN);
 	if(screen == NULL){
-		//Error
+		SDL_Log("Could not create window: %s", SDL_GetError());
+        SDL_Quit();
 	}
 	
 	SDL_Surface *pScreen = SDL_GetWindowSurface(screen);
@@ -28,7 +31,7 @@ void init_window(){
 
 	//Create Gradien from img
 	SDL_Surface *gradient;
-	gradient = IMG_Load("Img/Gradient2.png");
+	gradient = IMG_Load("Img/Gradient3.png");
 	SDL_Rect gradient_pos;
 	gradient_pos.x = 0;
 	gradient_pos.y = 0;
@@ -37,28 +40,28 @@ void init_window(){
 
 	//Create Drap&Drop side from img
 	SDL_Surface *dragdrop;
-	dragdrop = IMG_Load("Img/DragDrop2.png");
+	dragdrop = IMG_Load("Img/DragDrop3.png");
 	SDL_Rect dragdrop_pos;
-	dragdrop_pos.x = 375;
+	dragdrop_pos.x = 563;
 	dragdrop_pos.y = 0;
 	SDL_BlitSurface(dragdrop,NULL,pScreen, &dragdrop_pos);
 	SDL_FreeSurface(dragdrop);
 
 	//Create GroupName from img
 	SDL_Surface *group_name;
-	group_name = IMG_Load("Img/GroupName2.png");
+	group_name = IMG_Load("Img/GroupName3.png");
 	SDL_Rect group_name_pos;
-	group_name_pos.x = 80;
-	group_name_pos.y = 30;
+	group_name_pos.x = 120;
+	group_name_pos.y = 35;
 	SDL_BlitSurface(group_name,NULL,pScreen, &group_name_pos);
 	SDL_FreeSurface(group_name);
 
 	//Create Logo
 	SDL_Surface *logo;
-	logo = IMG_Load("Img/Logo2.png");
+	logo = IMG_Load("Img/Logo3.png");
 	SDL_Rect logo_pos;
-	logo_pos.x = 135;
-	logo_pos.y = 100;
+	logo_pos.x = 200;
+	logo_pos.y = 150;
 	SDL_BlitSurface(logo,NULL,pScreen, &logo_pos);
 	SDL_FreeSurface(logo);
 
@@ -68,13 +71,13 @@ void init_window(){
 
 	//Create font
 	TTF_Font *font;
-	font = TTF_OpenFont("./Font/Raleway-Regular.ttf",20);
+	font = TTF_OpenFont("./Font/Raleway-Regular.ttf",24);
 	SDL_Color font_color = {255,255,255,1};
 
 	//Create Text area
-	int menu_x = 135;
-	int menu_y = 260;
-	int menu_step = 50;
+	int menu_x = 200;
+	int menu_y = 400;
+	int menu_step = 60;
 
 	SDL_Surface *add;
 	add = TTF_RenderUTF8_Blended(font,"ADD FILE",font_color);
@@ -108,14 +111,19 @@ void init_window(){
 	SDL_BlitSurface(quit,NULL,pScreen,&quit_pos);
 	SDL_FreeSurface(quit);
 
-	
 
 	//Refresh the screen
 	SDL_UpdateWindowSurface(screen);
 
+
 	//Event Loop
 	int continuer = 1;
     SDL_Event event;
+
+	//Enable drop file
+	char* dropped_filedir;
+	char* file_ext = "";
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
  
     while (continuer)
     {
@@ -127,47 +135,78 @@ void init_window(){
 				break;
 
 			case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
-            {
-                case SDLK_ESCAPE: // Esc to quit the program
-                    continuer = 0;
-                    break;
-            }
-            break;
+				switch (event.key.keysym.sym)
+				{
+					case SDLK_ESCAPE: // Esc to quit the program
+						continuer = 0;
+						break;
+				}
+				break;
 
 			case SDL_MOUSEBUTTONUP:
-			// If clicked on ADD FILE
-			if(event.button.y > add_pos.y 
-			   && event.button.y <= add_pos.y+btn_height
-			   && event.button.x > add_pos.x 
-			   && event.button.x <= add_pos.x+btn_width)
-			   {
-				   continuer = 0;
-			   }
-			// If clicked on SAVED FILES
-			else if(event.button.y > saved_pos.y 
-			   && event.button.y <= saved_pos.y+btn_height
-			   && event.button.x > saved_pos.x 
-			   && event.button.x <= saved_pos.x+btn_width)
-			   {
-				   continuer = 0;
-			   }
-			// If clicked on SETTINGS
-			else if(event.button.y > settings_pos.y 
-			   && event.button.y <= settings_pos.y+btn_height
-			   && event.button.x > settings_pos.x 
-			   && event.button.x <= settings_pos.x+btn_width)
-			   {
-				   continuer = 0;
-			   }
-			// If clicked on QUIT
-			else if(event.button.y > quit_pos.y 
-			   && event.button.y <= quit_pos.y+btn_height
-			   && event.button.x > quit_pos.x 
-			   && event.button.x <= quit_pos.x+btn_width)
-			   {
-				   continuer = 0;
-			   }
+				// If clicked on ADD FILE
+				if(event.button.y > add_pos.y 
+				&& event.button.y <= add_pos.y+btn_height
+				&& event.button.x > add_pos.x 
+				&& event.button.x <= add_pos.x+btn_width)
+				{
+					continuer = 0;
+				}
+				// If clicked on SAVED FILES
+				else if(event.button.y > saved_pos.y 
+				&& event.button.y <= saved_pos.y+btn_height
+				&& event.button.x > saved_pos.x 
+				&& event.button.x <= saved_pos.x+btn_width)
+				{
+					continuer = 0;
+				}
+				// If clicked on SETTINGS
+				else if(event.button.y > settings_pos.y 
+				&& event.button.y <= settings_pos.y+btn_height
+				&& event.button.x > settings_pos.x 
+				&& event.button.x <= settings_pos.x+btn_width)
+				{
+					continuer = 0;
+				}
+				// If clicked on QUIT
+				else if(event.button.y > quit_pos.y 
+				&& event.button.y <= quit_pos.y+btn_height
+				&& event.button.x > quit_pos.x 
+				&& event.button.x <= quit_pos.x+btn_width)
+				{
+					continuer = 0;
+				}
+				break;
+			case (SDL_DROPFILE): {      // In case if dropped file
+                    dropped_filedir = event.drop.file;
+					int n = strlen(dropped_filedir);
+					
+					printf("%d\n",n);
+					printf("%s",file_ext);
+					Img *source = img_import(dropped_filedir);
+
+
+					SDL_Surface *image;
+					image = IMG_Load(dropped_filedir);
+					SDL_Rect image_pos;
+					image_pos.x = 0;
+					image_pos.y = 0;
+					SDL_BlitSurface(image,NULL,pScreen, &image_pos);
+					SDL_FreeSurface(image);
+					//Refresh the screen
+					SDL_UpdateWindowSurface(screen);
+
+                    // Shows directory of dropped file
+                    SDL_ShowSimpleMessageBox(
+                        SDL_MESSAGEBOX_INFORMATION,
+                        "File dropped on window",
+                        dropped_filedir,
+                        screen
+                    );
+                    SDL_free(dropped_filedir);    // Free dropped_filedir memory
+                    break;
+               }
+
 			
         }
     }
