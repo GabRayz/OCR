@@ -26,9 +26,12 @@ void init_window(){
 	SDL_Surface *pScreen = SDL_GetWindowSurface(screen);
 	
 	Uint32 color = SDL_MapRGB(pScreen->format, 75,75,75);
+	Uint32 darkGrey = SDL_MapRGB(pScreen->format, 65,67,71);
 
 	SDL_FillRect(pScreen, NULL, color);
 
+
+	
 	//Create Gradien from img
 	SDL_Surface *gradient;
 	gradient = IMG_Load("Img/Gradient3.png");
@@ -36,7 +39,6 @@ void init_window(){
 	gradient_pos.x = 0;
 	gradient_pos.y = 0;
 	SDL_BlitSurface(gradient,NULL,pScreen, &gradient_pos);
-	SDL_FreeSurface(gradient);
 
 	//Create Drap&Drop side from img
 	SDL_Surface *dragdrop;
@@ -45,7 +47,6 @@ void init_window(){
 	dragdrop_pos.x = 563;
 	dragdrop_pos.y = 0;
 	SDL_BlitSurface(dragdrop,NULL,pScreen, &dragdrop_pos);
-	SDL_FreeSurface(dragdrop);
 
 	//Create GroupName from img
 	SDL_Surface *group_name;
@@ -54,7 +55,6 @@ void init_window(){
 	group_name_pos.x = 120;
 	group_name_pos.y = 35;
 	SDL_BlitSurface(group_name,NULL,pScreen, &group_name_pos);
-	SDL_FreeSurface(group_name);
 
 	//Create Logo
 	SDL_Surface *logo;
@@ -63,7 +63,6 @@ void init_window(){
 	logo_pos.x = 200;
 	logo_pos.y = 150;
 	SDL_BlitSurface(logo,NULL,pScreen, &logo_pos);
-	SDL_FreeSurface(logo);
 
 	//Set buttons height and width
 	int btn_height = 30;
@@ -85,7 +84,6 @@ void init_window(){
 	add_pos.x = menu_x;
 	add_pos.y = menu_y;
 	SDL_BlitSurface(add,NULL,pScreen,&add_pos);
-	SDL_FreeSurface(add);
 
 	SDL_Surface *saved;
 	saved = TTF_RenderUTF8_Blended(font,"SAVED FILES",font_color);
@@ -93,7 +91,6 @@ void init_window(){
 	saved_pos.x = menu_x;
 	saved_pos.y = menu_y + menu_step;
 	SDL_BlitSurface(saved,NULL,pScreen,&saved_pos);
-	SDL_FreeSurface(saved);
 
 	SDL_Surface *settings;
 	settings = TTF_RenderUTF8_Blended(font,"SETTINGS",font_color);
@@ -101,7 +98,6 @@ void init_window(){
 	settings_pos.x = menu_x;
 	settings_pos.y = menu_y + menu_step * 2;
 	SDL_BlitSurface(settings,NULL,pScreen,&settings_pos);
-	SDL_FreeSurface(settings);
 
 	SDL_Surface *quit;
 	quit = TTF_RenderUTF8_Blended(font,"QUIT",font_color);
@@ -109,8 +105,21 @@ void init_window(){
 	quit_pos.x = menu_x;
 	quit_pos.y = menu_y + menu_step * 3;
 	SDL_BlitSurface(quit,NULL,pScreen,&quit_pos);
-	SDL_FreeSurface(quit);
 
+	//Process button
+	SDL_Surface *process_btn;
+	process_btn = IMG_Load("Img/Btn.png");
+	SDL_Rect process_btn_pos;
+	process_btn_pos.x = 450;
+	process_btn_pos.y = 600;
+	int display_btn = 0;
+
+	//Display image
+	SDL_Rect display_img_pos;
+	display_img_pos.x = 0;
+	display_img_pos.y = 100;
+	display_img_pos.w = 563;
+	display_img_pos.h = 695;
 
 	//Refresh the screen
 	SDL_UpdateWindowSurface(screen);
@@ -145,34 +154,27 @@ void init_window(){
 
 			case SDL_MOUSEBUTTONUP:
 				// If clicked on ADD FILE
-				if(event.button.y > add_pos.y 
-				&& event.button.y <= add_pos.y+btn_height
-				&& event.button.x > add_pos.x 
-				&& event.button.x <= add_pos.x+btn_width)
+				if(isClicked(event.button, add_pos,btn_height,btn_width))
 				{
 					continuer = 0;
 				}
 				// If clicked on SAVED FILES
-				else if(event.button.y > saved_pos.y 
-				&& event.button.y <= saved_pos.y+btn_height
-				&& event.button.x > saved_pos.x 
-				&& event.button.x <= saved_pos.x+btn_width)
+				else if(isClicked(event.button, saved_pos,btn_height,btn_width))
 				{
 					continuer = 0;
 				}
 				// If clicked on SETTINGS
-				else if(event.button.y > settings_pos.y 
-				&& event.button.y <= settings_pos.y+btn_height
-				&& event.button.x > settings_pos.x 
-				&& event.button.x <= settings_pos.x+btn_width)
+				else if(isClicked(event.button, settings_pos,btn_height,btn_width))
 				{
 					continuer = 0;
 				}
 				// If clicked on QUIT
-				else if(event.button.y > quit_pos.y 
-				&& event.button.y <= quit_pos.y+btn_height
-				&& event.button.x > quit_pos.x 
-				&& event.button.x <= quit_pos.x+btn_width)
+				else if(isClicked(event.button, quit_pos,btn_height,btn_width))
+				{
+					continuer = 0;
+				}
+				// If clicked on Digitalize
+				else if(isClicked(event.button, process_btn_pos,184,368) & display_btn)
 				{
 					continuer = 0;
 				}
@@ -185,24 +187,43 @@ void init_window(){
 					printf("%s",file_ext);
 					Img *source = img_import(dropped_filedir);
 
+					if(source){
+						//Put a dark bg
+						// SDL_Surface *bg = SDL_CreateRGBSurface(0,563, 795, 32,0,0,0,0);
+						// SDL_FillRect(bg,NULL,darkGrey);
+						// SDL_Rect bg_pos;
+						// bg_pos.x = 0;
+						// bg_pos.y = 0;
+						SDL_BlitSurface(gradient,NULL,pScreen, &gradient_pos);
+						// SDL_FreeSurface(bg);
 
-					SDL_Surface *image;
-					image = IMG_Load(dropped_filedir);
-					SDL_Rect image_pos;
-					image_pos.x = 0;
-					image_pos.y = 0;
-					SDL_BlitSurface(image,NULL,pScreen, &image_pos);
-					SDL_FreeSurface(image);
-					//Refresh the screen
-					SDL_UpdateWindowSurface(screen);
+						//Display Name
+						SDL_BlitSurface(group_name,NULL,pScreen, &group_name_pos);
+
+						//Resize and Display image to the left
+						SDL_Surface *image;
+						image = IMG_Load(dropped_filedir);
+						SDL_Rect image_pos;
+						image_pos.x = 0;
+						image_pos.y = 0;
+						SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+						SDL_FreeSurface(image);
+
+						//Blit process_btn
+						display_btn = 1;
+						SDL_BlitSurface(process_btn,NULL,pScreen, &process_btn_pos);
+
+						//Refresh the screen
+						SDL_UpdateWindowSurface(screen);
+					}
 
                     // Shows directory of dropped file
-                    SDL_ShowSimpleMessageBox(
-                        SDL_MESSAGEBOX_INFORMATION,
-                        "File dropped on window",
-                        dropped_filedir,
-                        screen
-                    );
+                    // SDL_ShowSimpleMessageBox(
+                    //     SDL_MESSAGEBOX_INFORMATION,
+                    //     "File dropped on window",
+                    //     dropped_filedir,
+                    //     screen
+                    // );
                     SDL_free(dropped_filedir);    // Free dropped_filedir memory
                     break;
                }
@@ -210,11 +231,29 @@ void init_window(){
 			
         }
     }
+	//Free everything 
+	SDL_FreeSurface(gradient);
+	SDL_FreeSurface(dragdrop);
+	SDL_FreeSurface(group_name);
+	SDL_FreeSurface(logo);
+	SDL_FreeSurface(add);
+	SDL_FreeSurface(saved);
+	SDL_FreeSurface(settings);
+	SDL_FreeSurface(quit);
+	SDL_FreeSurface(process_btn);
+
+
 	TTF_CloseFont(font);
 	TTF_Quit();
 	SDL_Quit();
 }
 
+int isClicked(SDL_MouseButtonEvent mouse, SDL_Rect btn, int btn_height, int btn_width ){
+	return mouse.y > btn.y 
+				&& mouse.y <= btn.y+btn_height
+				&& mouse.x > btn.x 
+				&& mouse.x <= btn.x+btn_width;
+}
 // void init_window(){
 
 // 	//Create Window
