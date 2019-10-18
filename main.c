@@ -16,7 +16,7 @@ NeuralNetwork *create_nn(char *filepath)
 {
     // Create a neural network, initialize it randomly, and make it learn
     int cycles = 50000;
-    LinkedList *list = read_dataset3(filepath);
+    LinkedList *list = read_dataset(filepath);
 
     int dataCount = list_length(list);
     Img **images = (Img **)list_to_array(list);
@@ -35,21 +35,6 @@ NeuralNetwork *create_nn(char *filepath)
 
     train(nn, images, dataCount, cycles);
     // train(nn, images, dataCount, 10000, 0);
-    return nn;
-}
-
-NeuralNetwork *create_nn_from_img(Img **images, int images_count)
-{
-    // Create a neural network, initialize it randomly, and make it learn
-    printf("Creating the neural network\n");
-    int cycles = 10000;
-    int *layerSizes = malloc(sizeof(int) * 3);
-    layerSizes[0] = 784;
-    layerSizes[1] = 25;
-    layerSizes[2] = 93;
-    NeuralNetwork *nn = nn_init(layerSizes, 3);
-    nn_setupRandom(nn);
-    train(nn, images, images_count, cycles);
     return nn;
 }
 
@@ -95,10 +80,6 @@ int read_image(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    argv;
-    MagickWandGenesis();
-    write_dataset(argc, argv);
-    // learn(argc, argv);
-    read_image(argc, argv);
+    init_window();
     return 0;
 }
