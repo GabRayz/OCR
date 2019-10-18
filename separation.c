@@ -304,7 +304,6 @@ LinkedList *character_split(Img *image, Block *block)
     LinkedList *res = list_init();
 
     Block *current = NULL;
-
     for (int x = block->x; x < block->x + block->width; x++)
     {
         double rate = vertical_char_white_rate(image, block, x);
@@ -327,6 +326,5 @@ LinkedList *character_split(Img *image, Block *block)
             current->height = block->height;
         }
     }
-
     return res;
 }

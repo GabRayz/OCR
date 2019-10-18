@@ -95,8 +95,10 @@ void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
     }
 }
 
-void nn_compute(NeuralNetwork *nn, double *pixels, int label)
+void nn_compute(NeuralNetwork *nn, double *pixels, unsigned char label)
 {
+    unsigned char c = label < 0 ? label + 256 : label;
+    printf("%u\n", c);
     /* 
     params:
         nn: Pointer to the Neural Network

@@ -19,10 +19,10 @@ void list_free(LinkedList *list)
     free(list);
 }
 
-Node *node_init(Block *block)
+Node *node_init(void *data)
 {
     Node *node = malloc(sizeof(Node));
-    node->block = block;
+    node->data = data;
     node->next = NULL;
     node->previous = NULL;
 
@@ -42,9 +42,12 @@ void list_insert(LinkedList *list, Node *node)
         list->start = node;
         list->end = node;
     }
-    node->previous = list->end;
-    list->end->next = node;
-    list->end = node;
+    else
+    {
+        node->previous = list->end;
+        list->end->next = node;
+        list->end = node;
+    }
 }
 
 int list_length(LinkedList *list)
@@ -62,7 +65,8 @@ int list_length(LinkedList *list)
 LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
 {
     assert(l1 != NULL && l2 != NULL);
-    if (l1->start == NULL) {
+    if (l1->start == NULL)
+    {
         list_free(l1);
         return l2;
     }
@@ -70,7 +74,8 @@ LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
     assert(l1->end != NULL);
 
     l1->end->next = l2->start;
-    if (l2->start) {
+    if (l2->start)
+    {
         l2->start->previous = l1->end;
         l1->end = l2->end;
     }
@@ -88,8 +93,23 @@ Block *list_get_index(LinkedList *list, int index)
         node = node->next;
     }
     if (i == index)
-        return node->block;
+        return node->data;
     else
         return NULL;
 }
 
+void **list_to_array(LinkedList *list)
+{
+    void **res = malloc(sizeof(void *) * (list_length(list) + 1));
+    Node *n = list->start;
+    int i = 0;
+    while (n)
+    {
+        res[i] = n->data;
+        n = n->next;
+        i++;
+    }
+    res[i] = NULL; 
+
+    return res;
+}
