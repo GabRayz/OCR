@@ -190,7 +190,6 @@ void create_dataset_from_img(char* source, char *destination)
     readdir(dir);
     while ((file = readdir(dir)) != NULL)
     {
-        printf("open image\n");
         // open image of the line
         sprintf(filepath, "%s/%s", source, file->d_name);
         Img *img = img_import(filepath);
@@ -224,6 +223,7 @@ LinkedList *read_dataset3(char *filepath)
     int i = 0;
     while ((file = readdir(dir)) != NULL)
     {
+        if (file->d_name[0] == '.') continue;
         // Store the file in the img
         Img *image = img_init(28, 28);
         image->filepath = malloc(sizeof(char) * 256);

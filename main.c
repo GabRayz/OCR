@@ -12,47 +12,45 @@
 #include <assert.h>
 #include "dataset.h"
 
-void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int learn)
+void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
 {
     /* 
     Train the neural network with the given set of images
     */
     printf("Training...\n");
     fputs("\e[?25l", stdout); /* hide the cursor */
-    double *results = malloc(sizeof(double) * cycles);
+    double sum = 0;
+    double accuracy = 0;
     for (int i = 0; i < cycles; i++)
     {
-
-        printf("\r%d / %d", i + 1, cycles);
-        unsigned int index = learn ? rand() % images_count : i % images_count;
+        if (i % 1000 == 0)
+        {
+            // Stop training when accuracy is 100 or
+            double tmp = (sum / 1000) * 100;
+            // if (tmp < accuracy || tmp == 100)
+            //     break;
+            accuracy = tmp;
+            sum = 0;
+        }
+        printf("\r%d / %d, accuracy = %lf", i + 1, cycles, accuracy);
+        unsigned int index = rand() % images_count;
         Img *img = images[index];
         // print_image(img);
         // printf("%c %d\n", img->label, img->label);
 
         nn_compute(nn, img->pixels, (int)img->label);
-        if (learn)
-            nn_backProp(nn);
+        nn_backProp(nn);
 
-        results[i] = (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
-        // if (!learn)
-        //     printf("%c", nn_getResult(nn));
+        sum += (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
     }
     fputs("\e[?25h", stdout); /* show the cursor */
     printf("\n");
-
-    double sum = 0;
-    for (int i = 0; i < cycles; i++)
-    {
-        sum += results[i];
-    }
-
-    printf("Accuracy : %lf\n", (sum / cycles) * 100);
 }
 
 NeuralNetwork *create_nn(char *filepath)
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 15000;
+    int cycles = 50000;
     LinkedList *list = read_dataset3(filepath);
 
     int dataCount = list_length(list);
@@ -60,17 +58,18 @@ NeuralNetwork *create_nn(char *filepath)
     dataset_to_pixels(images, dataCount);
     printf("Loaded paths, loading images...\n");
 
-    int *layerSizes = malloc(sizeof(int) * 3);
+    int *layerSizes = malloc(sizeof(int) * 4);
     layerSizes[0] = 784;
-    layerSizes[1] = 256;
-    layerSizes[2] = 93;
+    layerSizes[1] = 384;
+    layerSizes[2] = 256;
+    layerSizes[3] = 93;
 
-    NeuralNetwork *nn = nn_init(layerSizes, 3);
+    NeuralNetwork *nn = nn_init(layerSizes, 4);
     nn_setupRandom(nn);
     printf("Let's train !\n");
 
-    train(nn, images, dataCount, cycles, 1);
-    train(nn, images, dataCount, 10000, 0);
+    train(nn, images, dataCount, cycles);
+    // train(nn, images, dataCount, 10000, 0);
     return nn;
 }
 
@@ -85,8 +84,7 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
     layerSizes[2] = 93;
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
-    train(nn, images, images_count, cycles, 1);
-    train(nn, images, images_count, 1000, 0);
+    train(nn, images, images_count, cycles);
     return nn;
 }
 
@@ -117,7 +115,17 @@ int write_dataset(int argc, char **argv)
 
 int learn(int argc, char **argv)
 {
-    create_nn("dataset/training/set1");
+    NeuralNetwork *nn = create_nn("dataset/training/set1");
+    nn_saveBinary(nn, "save/cervo1");
+}
+
+int read(int argc, char **argv)
+{
+    Img *source = img_import("dataset/images/spaced.png");
+    LinkedList *chars = segmentation(source);
+    NeuralNetwork *nn = nn_load("save/cervo1");
+    char *res = send_to_cerveau(source, chars, nn);
+    printf("%s\n", res);
 }
 
 int main(int argc, char **argv)
@@ -125,6 +133,7 @@ int main(int argc, char **argv)
     argv;
     MagickWandGenesis();
     write_dataset(argc, argv);
-    learn(argc, argv);
+    // learn(argc, argv);
+    read(argc, argv);
     return 0;
 }
