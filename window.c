@@ -12,8 +12,10 @@ void init_window(){
 	SDL_Init(SDL_INIT_VIDEO);
 	TTF_Init();
 	
+	int right = 563;
+	int left = 702;
 	int height = 795;
-	int width = 563 + 702;
+	int width = right + left;
 
 
 	screen = SDL_CreateWindow("OCR - Les Croisillons",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width,height,SDL_WINDOW_SHOWN);
@@ -25,7 +27,6 @@ void init_window(){
 	SDL_Surface *pScreen = SDL_GetWindowSurface(screen);
 	
 	Uint32 color = SDL_MapRGB(pScreen->format, 75,75,75);
-	Uint32 darkGrey = SDL_MapRGB(pScreen->format, 65,67,71);
 
 	SDL_FillRect(pScreen, NULL, color);
 
@@ -65,7 +66,7 @@ void init_window(){
 
 	//Set buttons height and width
 	int btn_height = 30;
-	int btn_width = 160;
+	int btn_width = 300;//160;
 
 	//Create font
 	TTF_Font *font;
@@ -73,37 +74,44 @@ void init_window(){
 	SDL_Color font_color = {255,255,255,0};
 
 	//Create Text area
-	int menu_x = 200;
+	int menu_x = 130;//200;
 	int menu_y = 400;
 	int menu_step = 60;
 
 	SDL_Surface *add;
-	add = TTF_RenderUTF8_Blended(font,"ADD FILE",font_color);
+	add = TTF_RenderUTF8_Blended(font,"GRAYSCALE & BW",font_color);
 	SDL_Rect add_pos;
 	add_pos.x = menu_x;
 	add_pos.y = menu_y;
 	SDL_BlitSurface(add,NULL,pScreen,&add_pos);
 
 	SDL_Surface *saved;
-	saved = TTF_RenderUTF8_Blended(font,"SAVED FILES",font_color);
+	saved = TTF_RenderUTF8_Blended(font,"PARAGRAPHS DETECTION",font_color);
 	SDL_Rect saved_pos;
 	saved_pos.x = menu_x;
 	saved_pos.y = menu_y + menu_step;
 	SDL_BlitSurface(saved,NULL,pScreen,&saved_pos);
 
 	SDL_Surface *settings;
-	settings = TTF_RenderUTF8_Blended(font,"SETTINGS",font_color);
+	settings = TTF_RenderUTF8_Blended(font,"LINES DETECTION",font_color);
 	SDL_Rect settings_pos;
 	settings_pos.x = menu_x;
 	settings_pos.y = menu_y + menu_step * 2;
 	SDL_BlitSurface(settings,NULL,pScreen,&settings_pos);
 
 	SDL_Surface *quit;
-	quit = TTF_RenderUTF8_Blended(font,"QUIT",font_color);
+	quit = TTF_RenderUTF8_Blended(font,"CHARACTERS DETECTION",font_color);
 	SDL_Rect quit_pos;
 	quit_pos.x = menu_x;
 	quit_pos.y = menu_y + menu_step * 3;
 	SDL_BlitSurface(quit,NULL,pScreen,&quit_pos);
+
+	SDL_Surface *digitalize;
+	digitalize = TTF_RenderUTF8_Blended(font,"RECOGNITION",font_color);
+	SDL_Rect digitalize_pos;
+	digitalize_pos.x = menu_x;
+	digitalize_pos.y = menu_y + menu_step * 4;
+	SDL_BlitSurface(digitalize,NULL,pScreen,&digitalize_pos);
 
 	SDL_Surface *process;
 	process = TTF_RenderUTF8_Blended(font,"DIGITALIZE!",font_color);
@@ -120,11 +128,12 @@ void init_window(){
 	int display_btn = 0;
 
 	//Display image
+	SDL_Surface *image;
 	SDL_Rect display_img_pos;
-	display_img_pos.x = 0;
-	display_img_pos.y = 100;
-	display_img_pos.w = 564;
-	display_img_pos.h = 695;
+	display_img_pos.x = right;
+	display_img_pos.y = 0;
+	display_img_pos.w = left;
+	display_img_pos.h = height;
 
 	//Refresh the screen
 	SDL_UpdateWindowSurface(screen);
@@ -138,14 +147,15 @@ void init_window(){
 	char* dropped_filedir;
 	char* file_ext = "";
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
- 
+	int file_dropped = 0;
+	int y = 0;
     while (continuer)
     {
-        SDL_WaitEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                continuer = 0;
+		SDL_WaitEvent(&event);
+		switch(event.type)
+		{
+			case SDL_QUIT:
+				continuer = 0;
 				break;
 
 			case SDL_KEYDOWN:
@@ -178,66 +188,71 @@ void init_window(){
 				{
 					continuer = 0;
 				}
-				// If clicked on Digitalize
+				// If clicked on DIGITALIZE
 				else if(isClicked(event.button, process_btn_pos,184,368) & display_btn)
 				{
 					continuer = 0;
 				}
 				break;
-			case (SDL_DROPFILE): {      // In case if dropped file
-                    dropped_filedir = event.drop.file;
-					int n = strlen(dropped_filedir);
-					
-					printf("%s",file_ext);
-					Img *source = img_import(dropped_filedir);
+			case (SDL_DROPFILE): {
+				// In case if dropped file
+				dropped_filedir = event.drop.file;
+				int n = strlen(dropped_filedir);
+				
+				printf("%s",file_ext);
+				Img *source = img_import(dropped_filedir);
 
-					if(source){
-						//Put a dark bg
-						// SDL_Surface *bg = SDL_CreateRGBSurface(0,563, 795, 32,0,0,0,0);
-						// SDL_FillRect(bg,NULL,darkGrey);
-						// SDL_Rect bg_pos;
-						// bg_pos.x = 0;
-						// bg_pos.y = 0;
-						SDL_BlitSurface(gradient,NULL,pScreen, &gradient_pos);
-						// SDL_FreeSurface(bg);
+				if(source){
+					// SDL_BlitSurface(gradient,NULL,pScreen, &gradient_pos);
 
-						//Display Name
-						SDL_BlitSurface(group_name,NULL,pScreen, &group_name_pos);
+					// //Display Name
+					// SDL_BlitSurface(group_name,NULL,pScreen, &group_name_pos);
 
-						//Resize and Display image to the left
-						SDL_Surface *image;
-						image = IMG_Load(dropped_filedir);
-						float w = image->w;
-						float h = image->h;
-						display_img_pos.h = 563*h/w;
-						SDL_Rect image_pos;
-						image_pos.x = 0;
-						image_pos.y = 0;
-						SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
-						SDL_FreeSurface(image);
+					//Resize and Display image to the left
+					image = IMG_Load(dropped_filedir);
+					float w = image->w;
+					float h = image->h;
+					display_img_pos.h = left*h/w;
+					SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+					SDL_FreeSurface(image);
 
-						//Blit process_btn
-						display_btn = 1;
-						SDL_BlitSurface(process_btn,NULL,pScreen, &process_btn_pos);
+					// //Blit process_btn
+					// display_btn = 1;
+					// SDL_BlitSurface(process_btn,NULL,pScreen, &process_btn_pos);
 
-						SDL_BlitSurface(process,NULL,pScreen,&process_pos);
+					// SDL_BlitSurface(process,NULL,pScreen,&process_pos);
 
-						//Refresh the screen
-						SDL_UpdateWindowSurface(screen);
+
+
+					//Refresh the screen
+					SDL_UpdateWindowSurface(screen);
+					file_dropped =1;
+				}
+
+				// Free dropped_filedir memory
+				SDL_free(dropped_filedir);   
+				break;
+			}
+
+			case (SDL_MOUSEWHEEL):
+			{
+				if(file_dropped)
+				{
+					if(event.wheel.y > 0) // scroll up
+					{
+						//SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+						
 					}
+					else if(event.wheel.y < 0) // scroll down
+					{
+						// Put code for handling "scroll down" here!
+					}
+					//Refresh the screen
+					SDL_UpdateWindowSurface(screen);
 
-                    // Shows directory of dropped file
-                    // SDL_ShowSimpleMessageBox(
-                    //     SDL_MESSAGEBOX_INFORMATION,
-                    //     "File dropped on window",
-                    //     dropped_filedir,
-                    //     screen
-                    // );
-                    SDL_free(dropped_filedir);    // Free dropped_filedir memory
-                    break;
-               }
+				}
 
-			
+			}
         }
     }
 	//Free everything 
@@ -251,6 +266,7 @@ void init_window(){
 	SDL_FreeSurface(quit);
 	SDL_FreeSurface(process);
 	SDL_FreeSurface(process_btn);
+	SDL_FreeSurface(image);
 
 
 	TTF_CloseFont(font);
