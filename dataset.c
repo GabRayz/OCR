@@ -17,112 +17,6 @@ char *concat(char *a, char *b)
     return res;
 }
 
-Img **read_dataset(int dataCount)
-{
-    /* 
-    Read the dataset/training directory to get images names
-     */
-    Img **images = malloc(sizeof(Img *) * dataCount);
-    char *prefix = "dataset/easy/";
-    char **files = malloc(sizeof(char *) * dataCount);
-
-    struct dirent *dir;
-    DIR *dataset = opendir("./dataset/easy/");
-    if (!dataset)
-    {
-        images[0] = NULL;
-        return images;
-    }
-
-    // Skip self and parent directory
-    readdir(dataset);
-    readdir(dataset);
-
-    // For each file up to dataCount
-    int i = 0;
-    while ((dir = readdir(dataset)) != NULL && i < dataCount)
-    {
-        // Store the file in the img
-        images[i] = img_init(28, 28);
-        images[i]->filepath = concat(prefix, dir->d_name);
-        // strcpy(images[i]->label, dir->d_name[0]);
-        images[i]->label = dir->d_name[0];
-        i++;
-    }
-
-    if (i < dataCount)
-        files[i] = NULL;
-
-    closedir(dataset);
-    dataset_to_pixels(images, dataCount);
-    return images;
-}
-
-Img **read_dataset2()
-{
-    /* 
-    Read the dataset/training directory to get images names
-     */
-    printf("Reading dataset...\n");
-
-    int dataCount = 1016 * 62;
-    Img **images = malloc(sizeof(Img *) * dataCount);
-    char *prefix = "./dataset/fonts/";
-    // char **files = malloc(sizeof(char *) * dataCount);
-
-    struct dirent *dir;
-    DIR *dataset = opendir(prefix);
-
-    assert(dataset != NULL);
-
-    // Skip self and parent directory
-    readdir(dataset);
-    readdir(dataset);
-
-    int i = 0;
-    while ((dir = readdir(dataset)) != NULL && i < 62)
-    {
-        // Prevent hiddent files
-        if (dir->d_name[0] == '.')
-            continue;
-
-        char *folderName = concat(prefix, dir->d_name);
-
-        char *tmp = concat(folderName, "/");
-        DIR *character = opendir(folderName);
-        int num = atoi(dir->d_name);
-        char label = num < 11 ? num + '0' - 1 : num < 37 ? num + 'A' - 11 : num + 'a' - 37;
-        readdir(character);
-        readdir(character);
-
-        struct dirent *dir2;
-        int j = 0;
-        while ((dir2 = readdir(character)) != NULL && j < 1016)
-        {
-            // Prevent hiddent files
-            if (dir->d_name[0] == '.')
-                continue;
-            char *fileName = concat(tmp, dir2->d_name);
-
-            // Store the file in the img
-            int index = i * 1016 + j;
-            images[index] = img_init(128, 128);
-            images[index]->filepath = fileName;
-            images[index]->label = label;
-            j++;
-        }
-
-        free(tmp);
-        free(folderName);
-        closedir(character);
-        i++;
-    }
-
-    closedir(dataset);
-    dataset_to_pixels(images, dataCount);
-    return images;
-}
-
 void dataset_to_pixels(Img **images, int dataCount)
 {
 
@@ -210,7 +104,7 @@ void create_dataset_from_img(char* source, char *destination)
     }
 }
 
-LinkedList *read_dataset3(char *filepath)
+LinkedList *read_dataset(char *filepath)
 {
     /* Read the dataset without knowing number of files */
 
