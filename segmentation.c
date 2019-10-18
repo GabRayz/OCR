@@ -2,13 +2,34 @@
 #include <stdio.h>
 #include "image.h"
 #include "linkedlist.h"
-#include "separation.h"
+#include "segmentation.h"
 #include <assert.h>
 
 // void assert(int condition) {
 //     if (!condition)
 //         exit(1);
 // }
+
+LinkedList *segmentation(Img *source)
+{
+    Block *block = img_make_block(source);
+    LinkedList *paragraphs = block_split_vertical(source, block);
+    LinkedList *lines = list_init();
+    Node *p = paragraphs->start;
+    while (p)
+    {
+        lines = list_concat(lines, line_split(source, p->data));
+        p = p->next;
+    }
+    LinkedList *chars = list_init();
+    Node *l = lines->start;
+    while (l)
+    {
+        chars = list_concat(chars, character_split(source, l->data));
+        l = l->next;
+    }
+    return chars;
+}
 
 Block *block_init()
 {

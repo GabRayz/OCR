@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "separation.h"
+#include "segmentation.h"
 #include "linkedlist.h"
 #include <assert.h>
 #include <stdio.h>

@@ -6,7 +6,7 @@
 #include "matrix.h"
 #include "image.h"
 #include "neuralnetwork.h"
-#include "separation.h"
+#include "segmentation.h"
 #include "window.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 #include <assert.h>
@@ -26,6 +26,8 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
         printf("\r%d / %d", i + 1, cycles);
         unsigned int index = learn ? rand() % images_count : i % images_count;
         Img *img = images[index];
+        // print_image(img);
+        // printf("%c %d\n", img->label, img->label);
 
         nn_compute(nn, img->pixels, (int)img->label);
         if (learn)
@@ -50,21 +52,20 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int le
 NeuralNetwork *create_nn(char *filepath)
 {
     // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 150000;
+    int cycles = 15000;
     LinkedList *list = read_dataset3(filepath);
-    
+
     int dataCount = list_length(list);
-    Img **images = (Img**)list_to_array(list);
+    Img **images = (Img **)list_to_array(list);
     dataset_to_pixels(images, dataCount);
     printf("Loaded paths, loading images...\n");
-    
-    int *layerSizes = malloc(sizeof(int) * 4);
+
+    int *layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
-    layerSizes[1] = 384;
-    layerSizes[2] = 256;
-    layerSizes[3] = 93;
-    
-    NeuralNetwork *nn = nn_init(layerSizes, 4);
+    layerSizes[1] = 256;
+    layerSizes[2] = 93;
+
+    NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
     printf("Let's train !\n");
 
@@ -89,27 +90,6 @@ NeuralNetwork *create_nn_from_img(Img **images, int images_count)
     return nn;
 }
 
-LinkedList *segmentation(Img *source)
-{
-    Block *block = img_make_block(source);
-    LinkedList *paragraphs = block_split_vertical(source, block);
-    LinkedList *lines = list_init();
-    Node *p = paragraphs->start;
-    while (p)
-    {
-        lines = list_concat(lines, line_split(source, p->data));
-        p = p->next;
-    }
-    LinkedList *chars = list_init();
-    Node *l = lines->start;
-    while (l)
-    {
-        chars = list_concat(chars, character_split(source, l->data));
-        l = l->next;
-    }
-    return chars;
-}
-
 char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 {
     char *res = malloc(sizeof(char) * list_length(chars) + 1);
@@ -130,54 +110,21 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
     return res;
 }
 
-Img **images_from_list(Img *source, LinkedList *chars, char *label, int *count)
+int write_dataset(int argc, char **argv)
 {
-    int length = list_length(chars);
-    Img **images = malloc(sizeof(Img) * length);
-    Node *n = chars->start;
-    // printf("%d\n", strlen(label));
-    int i = 0;
-    for (i = 0; i < length && label[i] != '\0'; i++)
-    {
-        Img *c = img_resize(source, n->data, 28, 28);
-        // char truc[] = {i / 100 + 48, (i / 10) % 10 + 48, i % 10 + 48, '\0'};
-        // img_save(c, concat(concat("res/", truc), ".png"));
-        images[i] = c;
-        images[i]->label = label[i];
-        n = n->next;
-    }
-    // printf("%d\n", i);
-    *count = i;
-    return images;
+    create_dataset_from_img("dataset/images/training", "dataset/training/set1");
 }
 
-char *string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ’()-_.,?!:;";
-
-int main()
+int learn(int argc, char **argv)
 {
-    // init_window();
-    // return 0;
+    create_nn("dataset/training/set1");
+}
+
+int main(int argc, char **argv)
+{
+    argv;
     MagickWandGenesis();
-    // printf("Importing image...\n");
-    Img *source = img_import("dataset/images/data1.png");
-    printf("Segmenting image...\n");
-    LinkedList *chars = segmentation(source);
-    // printf("Segmented\n");
-
-    int *count = malloc(sizeof(int));
-    Img **images = images_from_list(source, chars, string, count);
-
-    // create_dataset_from_img("dataset/training/set1/", images, strlen(string), 0);
-    // printf("%d\n", ',');
-    NeuralNetwork *nn = create_nn("dataset/training/set1/");
-    return 0;
-    // printf("Creating NN...\n");
-    // NeuralNetwork *nn = create_nn(62 * 1016);
-    // // NeuralNetwork *nn = create_nn_from_img(images_from_list(source, chars))
-
-    // char* res = send_to_cerveau(source, chars, nn);
-
-    // printf("%s\n", res);
-
+    write_dataset(argc, argv);
+    learn(argc, argv);
     return 0;
 }

@@ -4,6 +4,7 @@
 #include "image.h"
 #include "linkedlist.h"
 
+LinkedList *segmentation(Img *source);
 void assert(int condition);
 Block *block_init();
 void block_delete(Block *block);
