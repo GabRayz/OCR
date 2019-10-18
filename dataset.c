@@ -1,5 +1,5 @@
 #include "image.h"
-#include "separation.h"
+#include "segmentation.h"
 #include "dataset.h"
 #include <dirent.h>
 #include <stdlib.h>
@@ -151,40 +151,69 @@ void dataset_to_pixels(Img **images, int dataCount)
     fputs("\e[?25h", stdout); /* show the cursor */
     printf("\n");
 }
+const char *string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'()-_.,?!:;";
 
-// char *itoa(int num)
-// {
-
-// }
-
-void create_dataset_from_img(char *dirpath, Img **images, int dataCount, int index)
+/* 
+ * Create an array of resized images from a list of blocks
+ * 
+*/
+Img **images_from_list(Img *source, LinkedList *chars, int *count)
 {
-    for (int i = 0; i < dataCount; i++)
+    int length = list_length(chars);
+    Img **images = malloc(sizeof(Img) * length);
+    Node *n = chars->start;
+
+    int i = 0;
+    for (i = 0; i < length && string[i] != '\0'; i++)
     {
-        if (i % 73 == 0)
-            index++;
-        char *label = malloc(sizeof(char) * 5);
-        sprintf(label, "%u", (unsigned char)images[i]->label);
-
-        char truc[] = {'_', index / 100 + 48, (index / 10) % 10 + 48, index % 10 + 48, '.', 'p', 'n', 'g', '\0'};
-        char *tmp = concat(dirpath, label);
-        char *filepath = concat(tmp, truc);
-        
-        // print_image(images[i]);
-        printf("%s\n", filepath);
-        img_save(images[i], filepath);
-
-        free(tmp);
-        free(filepath);
+        Img *c = img_resize(source, n->data, 28, 28);
+        images[i] = c;
+        images[i]->label = string[i];
+        n = n->next;
     }
+    *count = i;
+    return images;
 }
 
-void	*ft_print_memory(void *addr, unsigned int size);
+/* 
+ * Open the training images of lines and create training images of chars
+*/
+void create_dataset_from_img(char* source, char *destination)
+{
+    printf("Creating dataset from images...\n");
+    // Open files
+    DIR *dir = opendir(source);
+    struct dirent *file;
+    int i = 0;
+    char filepath[256];
+    readdir(dir);
+    readdir(dir);
+    while ((file = readdir(dir)) != NULL)
+    {
+        // open image of the line
+        sprintf(filepath, "%s/%s", source, file->d_name);
+        Img *img = img_import(filepath);
+        // Split into characters
+        LinkedList *chars = segmentation(img);
+        // Create images
+        int count = 0;
+        Img **images = images_from_list(img, chars, &count);
+        
+
+        // Save images
+        for (int k = 0; k < count; k++)
+        {
+            sprintf(filepath, "%s/%u_%d.png", destination, (unsigned char)images[k]->label, i);
+            img_save(images[k], filepath);
+        }
+        i++;
+    }
+}
 
 LinkedList *read_dataset3(char *filepath)
 {
     /* Read the dataset without knowing number of files */
-    
+
     LinkedList *images = list_init();
     DIR *dir = opendir(filepath);
 
@@ -194,13 +223,14 @@ LinkedList *read_dataset3(char *filepath)
     int i = 0;
     while ((file = readdir(dir)) != NULL)
     {
+        if (file->d_name[0] == '.') continue;
         // Store the file in the img
         Img *image = img_init(28, 28);
-        image->filepath = concat(filepath, file->d_name);
-        int c = atoi(file->d_name);
-        ft_print_memory(&c, 8);
+        image->filepath = malloc(sizeof(char) * 256);
+        sprintf(image->filepath, "%s/%s", filepath, file->d_name);
+        int c = atoi(file->d_name); // atoi il fé de la merd
         image->label = c;
-        
+
         list_insert(images, node_init(image));
         i++;
     }
@@ -208,103 +238,4 @@ LinkedList *read_dataset3(char *filepath)
     // Img ** list = (Img **)list_to_array(images);
     //dataset_to_pixels(list, i);
     return images;
-}
-
-void ft_putchar(char c) {
-    printf("%c", c);
-}
-
-void	ft_put_point_str(char *str, int len)
-{
-	int i;
-
-	i = 0;
-	while (i < len)
-	{
-		if (str[i] >= 32 && str[i] <= 126)
-			ft_putchar(str[i]);
-		else
-			ft_putchar('.');
-		i++;
-	}
-}
-
-int		ft_power(int nb, int power)
-{
-	int res;
-
-	if (power < 0)
-		return (0);
-	res = 1;
-	while (power > 0)
-	{
-		res *= nb;
-		power--;
-	}
-	return (res);
-}
-
-void	ft_put2hexa(char *str, int len)
-{
-	char			*base;
-	int				i;
-	unsigned char	cache;
-
-	i = 0;
-	base = "0123456789abcdef";
-	while (i < 16)
-	{
-		if (i < len)
-		{
-			cache = str[i];
-			ft_putchar(base[cache / 16]);
-			ft_putchar(base[cache % 16]);
-		}
-		else
-			ft_put_point_str("  ", 2);
-		i++;
-		if (i % 2 == 0)
-			ft_putchar(' ');
-	}
-}
-
-void	ft_put_addr(unsigned int addr, int split)
-{
-	char	*base;
-	int		i;
-	int		p;
-
-	base = "0123456789abcdef";
-	i = 0;
-	while (i < 8)
-	{
-		p = ft_power(16, 7 - i);
-		ft_putchar(base[addr / p]);
-		addr %= p;
-		i++;
-		if (split && i % 4 == 0)
-			ft_putchar(' ');
-	}
-	ft_put_point_str(": ", 2);
-}
-
-void	*ft_print_memory(void *addr, unsigned int size)
-{
-	unsigned int	i;
-	int				left;
-
-	i = 0;
-	while (i < size)
-	{
-		if (i % 16 == 0)
-		{
-			left = size - i;
-			ft_put_addr(i, 0);
-			ft_put2hexa((char *)addr + i, (left >= 16 ? 16 : left));
-			ft_put_point_str((char *)addr + i, (left >= 16 ? 16 : left));
-			ft_putchar('\n');
-		}
-		i++;
-	}
-	return (addr);
 }

@@ -1,5 +1,5 @@
 #include "image.h"
-#include "separation.h"
+#include "segmentation.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 
 Img *img_init(int width, int height)
@@ -11,7 +11,8 @@ Img *img_init(int width, int height)
     img->width = width;
     img->height = height;
 
-    for(int x = 0; x < width * height; x++) {
+    for (int x = 0; x < width * height; x++)
+    {
         img->pixels[x] = 1.0;
     }
     return img;
@@ -98,11 +99,7 @@ void img_save(Img *img, char *filepath)
     ClearPixelWand(pixel);
     if (MagickImportImagePixels(wand, 0, 0, img->width, img->height, "I", DoublePixel, img->pixels) == MagickTrue)
     {
-        if (MagickWriteImage(wand, filepath) == MagickTrue)
-        {
-            printf("Image saved successfuly\n");
-        }
-        else
+        if (MagickWriteImage(wand, filepath) == MagickFalse)
         {
             printf("Failure :c\n");
             ExceptionType type = MagickGetExceptionType(wand);
@@ -123,17 +120,17 @@ Img *img_resize(Img *source, Block *block, int width, int height)
     int offsetX = (block->height * width / height - block->width) / 2;
     int offsetY = (block->width * height / width - block->height) / 2;
 
-    if(offsetX > 0)
+    if (offsetX > 0)
         offsetY = 0;
     else
         offsetX = 0;
     Img *res = img_init(block->width + 2 * offsetX, block->height + 2 * offsetY);
 
-    for(int y = 0; y < block->height; y++)
+    for (int y = 0; y < block->height; y++)
     {
-        for(int x = 0; x < block->width; x++)
+        for (int x = 0; x < block->width; x++)
         {
-            res->pixels[(y + offsetY) * res->width + x + offsetX] = source->pixels[(y+block->y) * source->width + x + block->x];
+            res->pixels[(y + offsetY) * res->width + x + offsetX] = source->pixels[(y + block->y) * source->width + x + block->x];
         }
     }
 
