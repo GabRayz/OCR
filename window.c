@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_main.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include "window.h"
@@ -71,7 +70,7 @@ void init_window(){
 	//Create font
 	TTF_Font *font;
 	font = TTF_OpenFont("./Font/Raleway-Regular.ttf",24);
-	SDL_Color font_color = {255,255,255,1};
+	SDL_Color font_color = {255,255,255,0};
 
 	//Create Text area
 	int menu_x = 200;
@@ -106,6 +105,12 @@ void init_window(){
 	quit_pos.y = menu_y + menu_step * 3;
 	SDL_BlitSurface(quit,NULL,pScreen,&quit_pos);
 
+	SDL_Surface *process;
+	process = TTF_RenderUTF8_Blended(font,"DIGITALIZE!",font_color);
+	SDL_Rect process_pos;
+	process_pos.x = 560;
+	process_pos.y = 660;
+
 	//Process button
 	SDL_Surface *process_btn;
 	process_btn = IMG_Load("Img/Btn.png");
@@ -118,7 +123,7 @@ void init_window(){
 	SDL_Rect display_img_pos;
 	display_img_pos.x = 0;
 	display_img_pos.y = 100;
-	display_img_pos.w = 563;
+	display_img_pos.w = 564;
 	display_img_pos.h = 695;
 
 	//Refresh the screen
@@ -183,7 +188,6 @@ void init_window(){
                     dropped_filedir = event.drop.file;
 					int n = strlen(dropped_filedir);
 					
-					printf("%d\n",n);
 					printf("%s",file_ext);
 					Img *source = img_import(dropped_filedir);
 
@@ -203,6 +207,9 @@ void init_window(){
 						//Resize and Display image to the left
 						SDL_Surface *image;
 						image = IMG_Load(dropped_filedir);
+						float w = image->w;
+						float h = image->h;
+						display_img_pos.h = 563*h/w;
 						SDL_Rect image_pos;
 						image_pos.x = 0;
 						image_pos.y = 0;
@@ -212,6 +219,8 @@ void init_window(){
 						//Blit process_btn
 						display_btn = 1;
 						SDL_BlitSurface(process_btn,NULL,pScreen, &process_btn_pos);
+
+						SDL_BlitSurface(process,NULL,pScreen,&process_pos);
 
 						//Refresh the screen
 						SDL_UpdateWindowSurface(screen);
@@ -240,6 +249,7 @@ void init_window(){
 	SDL_FreeSurface(saved);
 	SDL_FreeSurface(settings);
 	SDL_FreeSurface(quit);
+	SDL_FreeSurface(process);
 	SDL_FreeSurface(process_btn);
 
 

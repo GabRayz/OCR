@@ -84,7 +84,7 @@ int learn(int argc, char **argv)
     nn_saveBinary(nn, "save/cervo1");
 }
 
-int read(int argc, char **argv)
+int read_image(int argc, char **argv)
 {
     Img *source = img_import("dataset/images/spaced.png");
     LinkedList *chars = segmentation(source);
@@ -99,6 +99,6 @@ int main(int argc, char **argv)
     MagickWandGenesis();
     write_dataset(argc, argv);
     // learn(argc, argv);
-    read(argc, argv);
+    read_image(argc, argv);
     return 0;
 }
