@@ -126,9 +126,13 @@ void create_dataset_from_img(char *source, char *destination)
 LinkedList *read_dataset(char *filepath)
 {
     /* Read the dataset without knowing number of files */
-
+    printf("Read dataset : %s\n", filepath);
     LinkedList *images = list_init();
     DIR *dir = opendir(filepath);
+    if (dir == NULL) {
+        printf("ERROR : Dataset filepath does not exist.\n");
+        exit(1);
+    }
 
     readdir(dir);
     readdir(dir);
@@ -150,7 +154,5 @@ LinkedList *read_dataset(char *filepath)
         i++;
     }
 
-    // Img ** list = (Img **)list_to_array(images);
-    //dataset_to_pixels(list, i);
     return images;
 }

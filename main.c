@@ -12,29 +12,25 @@
 #include <assert.h>
 #include "dataset.h"
 
-NeuralNetwork *create_nn(char *filepath)
+NeuralNetwork *create_nn(char *filepath, int cycles)
 {
-    // Create a neural network, initialize it randomly, and make it learn
-    int cycles = 50000;
+    // Create a neural network, initialize it randomly, and make it lear
     LinkedList *list = read_dataset(filepath);
 
     int dataCount = list_length(list);
     Img **images = (Img **)list_to_array(list);
     dataset_to_pixels(images, dataCount);
-    printf("Loaded paths, loading images...\n");
 
     int *layerSizes = malloc(sizeof(int) * 4);
     layerSizes[0] = 784;
-    layerSizes[1] = 384;
+    layerSizes[1] = 256;
     layerSizes[2] = 256;
     layerSizes[3] = 93;
 
     NeuralNetwork *nn = nn_init(layerSizes, 4);
     nn_setupRandom(nn);
-    printf("Let's train !\n");
 
     train(nn, images, dataCount, cycles);
-    // train(nn, images, dataCount, 10000, 0);
     return nn;
 }
 
@@ -80,10 +76,25 @@ int write_dataset(int argc, char **argv)
 
 int learn(int argc, char **argv)
 {
-    printf("learn\n");
-    NeuralNetwork *nn = create_nn("dataset/training/set1");
-    nn_saveBinary(nn, "save/cervo1");
-    return 0;
+    // If there is no more args, take default values
+    if (argc == 2)
+    {
+        NeuralNetwork *nn = create_nn("dataset/training/set1", 50000);
+        nn_saveBinary(nn, "save/cervo1");
+        return 0;
+    }
+    else if (argc == 4 || argc == 5)
+    {
+        int cycles = atoi(argv[3]);
+        NeuralNetwork *nn = create_nn(argv[2], cycles);
+        if (argc == 5)
+        {
+            nn_saveBinary(nn, argv[4]);
+        }
+        return 0;
+    }
+    printf("Usage : ./ocr learn {path to dataset directory} {cycles} [saving path]\n");
+    return 1;
 }
 
 int read_image(int argc, char **argv)

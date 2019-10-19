@@ -7,6 +7,7 @@
 
 NeuralNetwork *nn_init(int *layerSizes, int layerCount)
 {
+    printf("Creating a neural network...\n");
     NeuralNetwork *nn = malloc(sizeof(NeuralNetwork));
     nn->layerCount = layerCount;
     nn->layerSizes = layerSizes;
@@ -350,6 +351,7 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
     /* 
     Train the neural network with the given set of images
     */
+    if (cycles == 0) return;
     printf("Training...\n");
     fputs("\e[?25l", stdout); /* hide the cursor */
     double sum = 0;
