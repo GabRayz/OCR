@@ -60,26 +60,55 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 
 int write_dataset(int argc, char **argv)
 {
-    create_dataset_from_img("dataset/images/training", "dataset/training/set1");
+    // If there is no more arguments, take default values
+    if (argc == 2)
+    {
+        create_dataset_from_img("dataset/images/training", "dataset/training/set1");
+        return 0;
+    }
+    if (argc != 4)
+    {
+        printf("Usage : ./ocr write_dataset {path to source dir} {path to training data dir}\n");
+        return 1;
+    }
+    else
+    {
+        create_dataset_from_img(argv[2], argv[3]);
+    }
+    return 0;
 }
 
 int learn(int argc, char **argv)
 {
+    printf("learn\n");
     NeuralNetwork *nn = create_nn("dataset/training/set1");
     nn_saveBinary(nn, "save/cervo1");
+    return 0;
 }
 
 int read_image(int argc, char **argv)
 {
+    printf("read image\n");
     Img *source = img_import("dataset/images/spaced.png");
     LinkedList *chars = segmentation(source);
     NeuralNetwork *nn = nn_load("save/cervo1");
     char *res = send_to_cerveau(source, chars, nn);
     printf("%s\n", res);
+    return 0;
 }
 
 int main(int argc, char **argv)
 {
-    init_window();
+    if (argc == 1)
+        init_window();
+    else
+    {
+        if (strcmp(argv[1], "write_dataset") == 0)
+            write_dataset(argc, argv);
+        if (strcmp(argv[1], "learn") == 0)
+            learn(argc, argv);
+        if (strcmp(argv[1], "read_image") == 0)
+            read_image(argc, argv);
+    }
     return 0;
 }
