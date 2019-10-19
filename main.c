@@ -21,13 +21,12 @@ NeuralNetwork *create_nn(char *filepath, int cycles)
     Img **images = (Img **)list_to_array(list);
     dataset_to_pixels(images, dataCount);
 
-    int *layerSizes = malloc(sizeof(int) * 4);
+    int *layerSizes = malloc(sizeof(int) * 3);
     layerSizes[0] = 784;
     layerSizes[1] = 256;
-    layerSizes[2] = 256;
-    layerSizes[3] = 93;
+    layerSizes[2] = 93;
 
-    NeuralNetwork *nn = nn_init(layerSizes, 4);
+    NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
 
     train(nn, images, dataCount, cycles);
@@ -41,11 +40,24 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
     int i = 0;
     while (n)
     {
-        remove_white_margin(source, n->data);
-        Img *resized = img_resize(source, n->data, 28, 28);
-        // Send to the neural network
-        nn_compute(nn, resized->pixels, 100);
-        res[i] = nn_getResult(nn);
+        Block *block = n->data;
+
+        if (block->label == '\0')
+        {
+            remove_white_margin(source, block);
+            Img *resized = img_resize(source, block, 28, 28);
+
+            // Send to the neural network
+            // print_image(resized);
+            nn_compute(nn, resized->pixels, 100);
+            res[i] = nn_getResult(nn);
+            // printf("%c\n", res[i]);
+        }
+        else
+        {
+            res[i] = block->label;
+        }
+
         n = n->next;
         i++;
     }
@@ -101,11 +113,26 @@ int read_image(int argc, char **argv)
 {
     printf("read image\n");
     Img *source = img_import("dataset/images/spaced.png");
-    LinkedList *chars = segmentation(source);
-    NeuralNetwork *nn = nn_load("save/cervo1");
+    LinkedList *chars = segmentation(source, true);
+    NeuralNetwork *nn = nn_load("save/Helve");
     char *res = send_to_cerveau(source, chars, nn);
     printf("%s\n", res);
     return 0;
+}
+
+int improve(int arc, char **argv)
+{
+    NeuralNetwork *nn = nn_load("save/cervo1");
+
+    LinkedList *list = read_dataset("dataset/training/set1");
+
+    int dataCount = list_length(list);
+    Img **images = (Img **)list_to_array(list);
+    dataset_to_pixels(images, dataCount);
+
+    int cycles = atoi(argv[2]);
+    train(nn, images, dataCount, cycles);
+    nn_saveBinary(nn, "save/cervo1");
 }
 
 int main(int argc, char **argv)
@@ -118,8 +145,10 @@ int main(int argc, char **argv)
             write_dataset(argc, argv);
         if (strcmp(argv[1], "learn") == 0)
             learn(argc, argv);
-        if (strcmp(argv[1], "read_image") == 0)
+        if (strcmp(argv[1], "read") == 0)
             read_image(argc, argv);
+        if (strcmp(argv[1], "improve") == 0)
+            improve(argc, argv);
     }
     return 0;
 }

@@ -10,7 +10,7 @@ typedef struct _Img
     char *filepath;
 } Img;
 
-#include "linkedlist.h"
+#include "segmentation.h"
 
 Img *img_init();
 

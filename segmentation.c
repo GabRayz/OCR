@@ -4,30 +4,31 @@
 #include "linkedlist.h"
 #include "segmentation.h"
 #include <assert.h>
+#include <stdbool.h>
 
-// void assert(int condition) {
-//     if (!condition)
-//         exit(1);
-// }
-
-LinkedList *segmentation(Img *source)
+LinkedList *segmentation(Img *source, bool whitespaces)
 {
     Block *block = img_make_block(source);
     LinkedList *paragraphs = block_split_vertical(source, block);
-    LinkedList *lines = list_init();
+    LinkedList *chars = list_init();
+
     Node *p = paragraphs->start;
     while (p)
     {
-        lines = list_concat(lines, line_split(source, p->data));
+        LinkedList *lines = line_split(source, p->data);
+
+        Node *l = lines->start;
+        while (l)
+        {
+            chars = list_concat(chars, character_split(source, l->data, whitespaces));
+            l = l->next;
+        }
+
+        // Maybe free lines with content & blocks ?
         p = p->next;
     }
-    LinkedList *chars = list_init();
-    Node *l = lines->start;
-    while (l)
-    {
-        chars = list_concat(chars, character_split(source, l->data));
-        l = l->next;
-    }
+    // Maybe free paragraphs with content & blocks ?
+    
     return chars;
 }
 
@@ -38,6 +39,7 @@ Block *block_init()
     block->y = 0;
     block->width = 0;
     block->height = 0;
+    block->label = '\0';
 
     return block;
 }
@@ -182,7 +184,7 @@ double horizontal_white_rate(Img *image, Block *block, int y)
 LinkedList *block_split_vertical(Img *image, Block *block)
 {
     /* Split the block in two, put them in a linked list */
-    
+
     // Remove margins
     remove_white_margin(image, block);
     int x = block->x;
@@ -224,11 +226,11 @@ LinkedList *block_split_vertical(Img *image, Block *block)
 LinkedList *block_split_horizontal(Img *image, Block *block)
 {
     /* Split the block in two, put child blocks in a linked list */
-    
+
     // Remove margins
     remove_white_margin(image, block);
     int y = block->y;
-    
+
     int blackHeight = 0;
     int whiteHeight = 0;
     int currentColor = 0;
@@ -236,7 +238,8 @@ LinkedList *block_split_horizontal(Img *image, Block *block)
     {
         double rate = horizontal_white_rate(image, block, y);
         // If the line is black
-        if (rate < threshold) {
+        if (rate < threshold)
+        {
             blackHeight++;
             // If the last line was white
             if (currentColor == 1)
@@ -320,7 +323,7 @@ LinkedList *line_split(Img *image, Block *block)
     return res;
 }
 
-LinkedList *character_split(Img *image, Block *block)
+LinkedList *character_split(Img *image, Block *block, bool whitespaces)
 {
     LinkedList *res = list_init();
 
@@ -340,6 +343,21 @@ LinkedList *character_split(Img *image, Block *block)
         // If the column is black and the previous column is white (no block defined)
         else if (rate < threshold && current == NULL)
         {
+            Block *last = res->end != NULL ? res->end->data : NULL;
+            // Insert whitespace if needed
+            if (whitespaces && last != NULL && x > last->x + last->width + block->height / 3)
+            {
+                Block *space = block_init();
+
+                space->x = last->x + last->width;
+                space->width = x - space->x;
+                space->y = block->y;
+                space->height = block->height;
+                space->label = ' ';
+
+                list_insert(res, node_init(space));
+            }
+
             // Create a new block
             current = block_init();
             current->x = x - 1;

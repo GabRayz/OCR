@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include "segmentation.h"
 #include "linkedlist.h"
 #include <assert.h>
 #include <stdio.h>
@@ -84,7 +83,7 @@ LinkedList *list_concat(LinkedList *l1, LinkedList *l2)
     return l1;
 }
 
-Block *list_get_index(LinkedList *list, int index)
+void *list_get_index(LinkedList *list, int index)
 {
     Node *node = list->start;
     int i = 0;

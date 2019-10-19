@@ -97,7 +97,7 @@ void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
     }
 }
 
-void nn_compute(NeuralNetwork *nn, double *pixels, unsigned char label)
+void nn_compute(NeuralNetwork *nn, double *pixels, char label)
 {
     /* 
     params:

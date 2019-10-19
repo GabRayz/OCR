@@ -28,7 +28,7 @@ typedef struct _NeuralNetwork {
 NeuralNetwork *nn_init(int *layerSizes, int layerCount);
 void nn_delete(NeuralNetwork *nn);
 
-void nn_compute(NeuralNetwork *nn, double *pixels, unsigned char label);
+void nn_compute(NeuralNetwork *nn, double *pixels, char label);
 void nn_setupRandom(NeuralNetwork *nn);
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels);
 void nn_feedForward(NeuralNetwork *nn);

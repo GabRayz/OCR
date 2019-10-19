@@ -1,8 +1,14 @@
 ocr
 *.o
 .vscode
-dataset/
 .DS_Store
 res.png
 res/
-dataset
+
+### Dataset
+dataset/*
+# Keep training line images for demo
+!dataset/images/
+!dataset/training/
+!dataset/training/
+dataset/training/*

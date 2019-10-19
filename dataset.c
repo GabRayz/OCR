@@ -106,7 +106,7 @@ void create_dataset_from_img(char *source, char *destination)
         sprintf(filepath, "%s/%s", source, file->d_name);
         Img *img = img_import(filepath);
         // Split into characters
-        LinkedList *chars = segmentation(img);
+        LinkedList *chars = segmentation(img, false);
         // Create images
         int count = 0;
         Img **images = images_from_list(img, chars, &count);
