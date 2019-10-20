@@ -111,13 +111,20 @@ int learn(int argc, char **argv)
 
 int read_image(int argc, char **argv)
 {
-    printf("read image\n");
-    Img *source = img_import("dataset/images/spaced.png");
-    LinkedList *chars = segmentation(source, true);
-    NeuralNetwork *nn = nn_load("save/Helve");
-    char *res = send_to_cerveau(source, chars, nn);
-    printf("%s\n", res);
-    return 0;
+    if (argc == 4)
+    {
+        printf("Importing image...\n");
+        Img *source = img_import(argv[3]);
+        LinkedList *chars = segmentation(source, true);
+
+        NeuralNetwork *nn = nn_load(argv[2]);
+        char *res = send_to_cerveau(source, chars, nn);
+        printf("%s\n", res);
+        return 0;
+    }
+    printf("Usage : ./ocr read {path to neural network} {path to image}\n");
+    printf("Exemple : ./ocr read save/Helve dataset/images/lorem.png\n");
+    return 1;
 }
 
 int improve(int arc, char **argv)
@@ -143,12 +150,14 @@ int main(int argc, char **argv)
     {
         if (strcmp(argv[1], "write_dataset") == 0)
             write_dataset(argc, argv);
-        if (strcmp(argv[1], "learn") == 0)
+        else if (strcmp(argv[1], "learn") == 0)
             learn(argc, argv);
-        if (strcmp(argv[1], "read") == 0)
+        else if (strcmp(argv[1], "read") == 0)
             read_image(argc, argv);
-        if (strcmp(argv[1], "improve") == 0)
+        else if (strcmp(argv[1], "improve") == 0)
             improve(argc, argv);
+        else
+            printf("Usage: ./ocr write_dataset|learn|read|improve\n");
     }
     return 0;
 }

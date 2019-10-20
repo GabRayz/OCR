@@ -29,7 +29,11 @@ Img *img_import(char *filepath)
 {
     /* Take the path of the image file. Returns the pixel array in black & white */
     MagickWand *wand = NewMagickWand();
-    MagickReadImage(wand, filepath);
+    if (MagickReadImage(wand, filepath) == MagickFalse)
+    {
+        printf("Error: Couldn't open image\n");
+        exit(1);
+    }
     int height = MagickGetImageHeight(wand);
     int width = MagickGetImageWidth(wand);
     // Initialize the pixel array. Each pixel is represented by 3 doubles (RGB)
