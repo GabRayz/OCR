@@ -134,6 +134,8 @@ int read_image(int argc, char **argv)
     }
     printf("Importing image...\n");
     Img *source = img_import(argv[3]);
+    // For demo
+    img_save(source, "res/bw.png");
     LinkedList *chars = segmentation(source, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);
@@ -163,6 +165,7 @@ int improve(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    // DIR *resfile = dir
     if (argc == 1)
         printf("Usage: ./ocr write_dataset|learn|read|improve\n");
     else if (strcmp(argv[1], "write_dataset") == 0)
