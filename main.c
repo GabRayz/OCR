@@ -11,6 +11,7 @@
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 #include <assert.h>
 #include "dataset.h"
+#include <sys/stat.h>
 
 NeuralNetwork *create_nn(char *filepath, int cycles)
 {
@@ -134,8 +135,6 @@ int read_image(int argc, char **argv)
     }
     printf("Importing image...\n");
     Img *source = img_import(argv[3]);
-    // For demo
-    img_save(source, "res/bw.png");
     LinkedList *chars = segmentation(source, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);
@@ -146,36 +145,42 @@ int read_image(int argc, char **argv)
     return 0;
 }
 
-int improve(int argc, char **argv)
-{
-    //TODO : Add args handling
-    NeuralNetwork *nn = nn_load("save/cervo1");
+// int improve(int argc, char **argv)
+// {
+//     //TODO : Add args handling
+//     NeuralNetwork *nn = nn_load("save/cervo1");
 
-    LinkedList *list = read_dataset("dataset/training/set1");
+//     LinkedList *list = read_dataset("dataset/training/set1");
 
-    int dataCount = list_length(list);
-    Img **images = (Img **)list_to_array(list);
-    dataset_to_pixels(images, dataCount);
+//     int dataCount = list_length(list);
+//     Img **images = (Img **)list_to_array(list);
+//     dataset_to_pixels(images, dataCount);
 
-    int cycles = atoi(argv[2]);
-    train(nn, images, dataCount, cycles);
-    nn_saveBinary(nn, "save/cervo1");
-    return 0;
-}
+//     int cycles = atoi(argv[2]);
+//     train(nn, images, dataCount, cycles);
+//     nn_saveBinary(nn, "save/cervo1");
+//     return 0;
+// }
 
 int main(int argc, char **argv)
 {
-    // DIR *resfile = dir
+    // Check if the res folder exists, create it otherwise
+    DIR *resfile = opendir("res");
+    if (resfile == NULL)
+        mkdir("res", 0755);
+    else
+        closedir(resfile);
+
     if (argc == 1)
-        printf("Usage: ./ocr write_dataset|learn|read|improve\n");
+        printf("Usage: ./ocr write_dataset|learn|read\n");
     else if (strcmp(argv[1], "write_dataset") == 0)
         write_dataset(argc, argv);
     else if (strcmp(argv[1], "learn") == 0)
         learn(argc, argv);
     else if (strcmp(argv[1], "read") == 0)
         read_image(argc, argv);
-    else if (strcmp(argv[1], "improve") == 0)
-        improve(argc, argv);
+    // else if (strcmp(argv[1], "improve") == 0)
+    //     improve(argc, argv);
     else if (argc == 2)
         init_window(argv[1]);
     return 0;
