@@ -112,11 +112,12 @@ void init_window(char *filepath)
 	process_pos.y = menu_y + menu_step * 4;
 	SDL_BlitSurface(process, NULL, pScreen, &process_pos);
 
-	SDL_Surface *digitalize;
-	digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
-	SDL_Rect digitalize_pos;
-	digitalize_pos.x = 560;
-	digitalize_pos.y = 660;
+	// To implement later
+	// SDL_Surface *digitalize;
+	// digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
+	// SDL_Rect digitalize_pos;
+	// digitalize_pos.x = 560;
+	// digitalize_pos.y = 660;
 
 	//Process button
 	SDL_Surface *digitalize_btn;

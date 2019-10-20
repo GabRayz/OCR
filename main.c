@@ -66,8 +66,17 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
     return res;
 }
 
-void save_res(char *res, char *filepath) {
-    FILE *file = fopen("res/res.txt", "r");
+void save_res(char *res, char *filepath)
+{
+    FILE *file = fopen("res/res.txt", "w");
+    if (file == NULL)
+    {
+        printf("Failed to save the result\n");
+        return;
+    }
+    fprintf(file, "%s", res);
+    fclose(file);
+    printf("Result saved at: %s\n", filepath);
 }
 
 int write_dataset(int argc, char **argv)
@@ -125,12 +134,15 @@ int read_image(int argc, char **argv)
     }
     printf("Importing image...\n");
     Img *source = img_import(argv[3]);
+    // For demo
+    img_save(source, "res/bw.png");
     LinkedList *chars = segmentation(source, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);
     char *res = send_to_cerveau(source, chars, nn);
 
     printf("Result: \n\n%s\n", res);
+    save_res(res, "res/res.txt");
     return 0;
 }
 
@@ -153,6 +165,7 @@ int improve(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    // DIR *resfile = dir
     if (argc == 1)
         printf("Usage: ./ocr write_dataset|learn|read|improve\n");
     else if (strcmp(argv[1], "write_dataset") == 0)
