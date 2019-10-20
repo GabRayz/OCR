@@ -69,14 +69,15 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 int write_dataset(int argc, char **argv)
 {
     // If there is no more arguments, take default values
-    if (argc == 2)
-    {
-        create_dataset_from_img("dataset/images/training", "dataset/training/set1");
-        return 0;
-    }
+    // if (argc == 2)
+    // {
+    //     create_dataset_from_img("dataset/images/training", "dataset/training/set1");
+    //     return 0;
+    // }
     if (argc != 4)
     {
         printf("Usage : ./ocr write_dataset {path to source dir} {path to training data dir}\n");
+        printf("Exemple : ./ocr write_dataset dataset/images/training dataset/training/set1\n");
         return 1;
     }
     else
@@ -89,13 +90,13 @@ int write_dataset(int argc, char **argv)
 int learn(int argc, char **argv)
 {
     // If there is no more args, take default values
-    if (argc == 2)
-    {
-        NeuralNetwork *nn = create_nn("dataset/training/set1", 50000);
-        nn_saveBinary(nn, "save/cervo1");
-        return 0;
-    }
-    else if (argc == 4 || argc == 5)
+    // if (argc == 2)
+    // {
+    //     NeuralNetwork *nn = create_nn("dataset/training/set1", 50000);
+    //     nn_saveBinary(nn, "save/cervo1");
+    //     return 0;
+    // }
+    if (argc == 4 || argc == 5)
     {
         int cycles = atoi(argv[3]);
         NeuralNetwork *nn = create_nn(argv[2], cycles);
@@ -106,6 +107,7 @@ int learn(int argc, char **argv)
         return 0;
     }
     printf("Usage : ./ocr learn {path to dataset directory} {cycles} [saving path]\n");
+    printf("Exemple : ./ocr learn dataset/training/set1 10000 save/Helve\n");
     return 1;
 }
 
