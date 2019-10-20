@@ -4,6 +4,9 @@
 #include <SDL2/SDL_image.h>
 #include "window.h"
 #include "image.h"
+#include "neuralnetwork.h"
+#include "main.h"
+
 
 void init_window(char *filepath)
 {
@@ -71,6 +74,7 @@ void init_window(char *filepath)
 	TTF_Font *font;
 	font = TTF_OpenFont("./Font/Raleway-Regular.ttf", 24);
 	SDL_Color font_color = {255, 255, 255, 0};
+	SDL_Color black = {0, 0, 0, 0};
 
 	//Create Text area
 	int menu_x = 130; //200;
@@ -112,6 +116,7 @@ void init_window(char *filepath)
 	process_pos.y = menu_y + menu_step * 4;
 	SDL_BlitSurface(process, NULL, pScreen, &process_pos);
 
+
 	// To implement later
 	// SDL_Surface *digitalize;
 	// digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
@@ -127,11 +132,20 @@ void init_window(char *filepath)
 	digitalize_btn_pos.y = 600;
 	int display_btn = 0;
 
-	//Display image
+	//Load neural network & run 
 	SDL_Surface *image;
 	image = IMG_Load(filepath);
 	Img *img = img_import(filepath);
+    img_save(img, "res/bw.png");
     LinkedList *chars = segmentation(img, true);
+	NeuralNetwork *nn = nn_load("save/all");
+	char* res = send_to_cerveau(img,chars,nn);
+
+	SDL_Surface *result;
+	result = TTF_RenderUTF8_Blended(font, res, black);
+	SDL_Rect result_pos;
+	result_pos.x = dragdrop_pos.x;
+	result_pos.y = dragdrop_pos.y;
 	
 	SDL_Rect display_img_pos;
 	display_img_pos.x = right;
@@ -178,12 +192,10 @@ void init_window(char *filepath)
 			break;
 
 		case SDL_MOUSEBUTTONUP:
-
-			SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-
 			// If clicked on Grayscale
 			if (isClicked(event.button, add_pos, btn_height, btn_width))
 			{
+				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
 				SDL_Surface* paragraph = IMG_Load("res/bw.png");
 				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(paragraph);
@@ -192,6 +204,7 @@ void init_window(char *filepath)
 			// If clicked on paragraphes
 			else if (isClicked(event.button, saved_pos, btn_height, btn_width))
 			{
+				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
 				SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
 				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(paragraph);
@@ -199,6 +212,7 @@ void init_window(char *filepath)
 			// If clicked on lines
 			else if (isClicked(event.button, settings_pos, btn_height, btn_width))
 			{
+				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
 				SDL_Surface* line = IMG_Load("res/line.png");
 				SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(line);
@@ -206,6 +220,7 @@ void init_window(char *filepath)
 			// If clicked on characters
 			else if (isClicked(event.button, quit_pos, btn_height, btn_width))
 			{
+				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
 				SDL_Surface* character = IMG_Load("res/character.png");
 				SDL_BlitSurface(character, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(character);
@@ -213,7 +228,9 @@ void init_window(char *filepath)
 			// If clicked on recognize
 			else if (isClicked(event.button, process_pos, btn_height, btn_width))
 			{
-				run = 0;
+				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
+				result_pos.w = 300;
+				SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 			}
 			// If clicked on DIGITALIZE
 			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & display_btn)
@@ -290,6 +307,7 @@ void init_window(char *filepath)
 	SDL_FreeSurface(process);
 	SDL_FreeSurface(digitalize_btn);
 	SDL_FreeSurface(image);
+	SDL_FreeSurface(result);
 
 	TTF_CloseFont(font);
 	TTF_Quit();
