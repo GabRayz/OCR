@@ -106,25 +106,25 @@ void init_window(){
 	quit_pos.y = menu_y + menu_step * 3;
 	SDL_BlitSurface(quit,NULL,pScreen,&quit_pos);
 
-	SDL_Surface *digitalize;
-	digitalize = TTF_RenderUTF8_Blended(font,"RECOGNITION",font_color);
-	SDL_Rect digitalize_pos;
-	digitalize_pos.x = menu_x;
-	digitalize_pos.y = menu_y + menu_step * 4;
-	SDL_BlitSurface(digitalize,NULL,pScreen,&digitalize_pos);
-
 	SDL_Surface *process;
-	process = TTF_RenderUTF8_Blended(font,"DIGITALIZE!",font_color);
+	process = TTF_RenderUTF8_Blended(font,"RECOGNITION",font_color);
 	SDL_Rect process_pos;
-	process_pos.x = 560;
-	process_pos.y = 660;
+	process_pos.x = menu_x;
+	process_pos.y = menu_y + menu_step * 4;
+	SDL_BlitSurface(process,NULL,pScreen,&process_pos);
+
+	SDL_Surface *digitalize;
+	digitalize = TTF_RenderUTF8_Blended(font,"DIGITALIZE!",font_color);
+	SDL_Rect digitalize_pos;
+	digitalize_pos.x = 560;
+	digitalize_pos.y = 660;
 
 	//Process button
-	SDL_Surface *process_btn;
-	process_btn = IMG_Load("Img/Btn.png");
-	SDL_Rect process_btn_pos;
-	process_btn_pos.x = 450;
-	process_btn_pos.y = 600;
+	SDL_Surface *digitalize_btn;
+	digitalize_btn = IMG_Load("Img/Btn.png");
+	SDL_Rect digitalize_btn_pos;
+	digitalize_btn_pos.x = 450;
+	digitalize_btn_pos.y = 600;
 	int display_btn = 0;
 
 	//Display image
@@ -188,8 +188,13 @@ void init_window(){
 				{
 					continuer = 0;
 				}
+				// If clicked on QUIT
+				else if(isClicked(event.button, process_pos,btn_height,btn_width))
+				{
+					continuer = 0;
+				}
 				// If clicked on DIGITALIZE
-				else if(isClicked(event.button, process_btn_pos,184,368) & display_btn)
+				else if(isClicked(event.button, digitalize_btn_pos,184,368) & display_btn)
 				{
 					continuer = 0;
 				}
@@ -265,7 +270,7 @@ void init_window(){
 	SDL_FreeSurface(settings);
 	SDL_FreeSurface(quit);
 	SDL_FreeSurface(process);
-	SDL_FreeSurface(process_btn);
+	SDL_FreeSurface(digitalize_btn);
 	SDL_FreeSurface(image);
 
 
