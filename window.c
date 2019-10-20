@@ -130,6 +130,8 @@ void init_window(char *filepath)
 	SDL_Surface *image;
 	image = IMG_Load(filepath);
 	Img *img = img_import(filepath);
+    LinkedList *chars = segmentation(img, true);
+	
 	SDL_Rect display_img_pos;
 	display_img_pos.x = right;
 	display_img_pos.y = 0;
@@ -175,26 +177,37 @@ void init_window(char *filepath)
 			break;
 
 		case SDL_MOUSEBUTTONUP:
+
+			SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
+
 			// If clicked on Grayscale
 			if (isClicked(event.button, add_pos, btn_height, btn_width))
 			{
-				img_save(img,filepath);
-				image = IMG_Load(filepath);
+				SDL_Surface* paragraph = IMG_Load("res/bw.png");
+				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
+				SDL_FreeSurface(paragraph);
+
 			}
 			// If clicked on paragraphes
 			else if (isClicked(event.button, saved_pos, btn_height, btn_width))
 			{
-				run = 0;
+				SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
+				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
+				SDL_FreeSurface(paragraph);
 			}
 			// If clicked on lines
 			else if (isClicked(event.button, settings_pos, btn_height, btn_width))
 			{
-				run = 0;
+				SDL_Surface* line = IMG_Load("res/line.png");
+				SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
+				SDL_FreeSurface(line);
 			}
 			// If clicked on characters
 			else if (isClicked(event.button, quit_pos, btn_height, btn_width))
 			{
-				run = 0;
+				SDL_Surface* character = IMG_Load("res/character.png");
+				SDL_BlitSurface(character, NULL, pScreen, &display_img_pos);
+				SDL_FreeSurface(character);
 			}
 			// If clicked on recognize
 			else if (isClicked(event.button, process_pos, btn_height, btn_width))
@@ -258,11 +271,11 @@ void init_window(char *filepath)
 				{
 					// Put code for handling "scroll down" here!
 				}
-				//Refresh the screen
-				SDL_UpdateWindowSurface(screen);
 			}
 		}
 		}
+		//Refresh the screen
+		SDL_UpdateWindowSurface(screen);
 	}
 	//Free everything
 	SDL_FreeSurface(gradient);
