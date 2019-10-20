@@ -93,7 +93,7 @@ void create_dataset_from_img(char *source, char *destination)
 
     struct dirent *file;
     int i = 0;
-    char filepath[256];
+    char filepath[521];
     // Skip self and parent directories
     readdir(src);
     readdir(src);
@@ -148,7 +148,7 @@ LinkedList *read_dataset(char *filepath)
             continue;
         // Store the file in the img
         Img *image = img_init(28, 28);
-        image->filepath = malloc(sizeof(char) * 256);
+        image->filepath = malloc(sizeof(char) * 512);
         sprintf(image->filepath, "%s/%s", filepath, file->d_name);
         int c = atoi(file->d_name); // atoi il fé de la merd
         image->label = c;
