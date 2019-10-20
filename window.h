@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 
-void init_window();
+void init_window(char *filepath);
 int isClicked(SDL_MouseButtonEvent mouse, SDL_Rect btn, int btn_height, int btn_width );
 
 #endif

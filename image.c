@@ -87,7 +87,7 @@ double *img_grayscale(double *pixels, int size)
     }
 
     // Convert into black & white
-    float threshold = 0.14;
+    float threshold = 0.3;
     for (int i = 0; i < size / 3; i++)
     {
         grayscale[i] = (grayscale[i] < threshold) ? 0 : 1;

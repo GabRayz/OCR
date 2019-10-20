@@ -28,11 +28,11 @@ typedef struct _NeuralNetwork {
 NeuralNetwork *nn_init(int *layerSizes, int layerCount);
 void nn_delete(NeuralNetwork *nn);
 
-void nn_compute(NeuralNetwork *nn, double *pixels, char label);
+void nn_compute(NeuralNetwork *nn, double *pixels);
 void nn_setupRandom(NeuralNetwork *nn);
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels);
 void nn_feedForward(NeuralNetwork *nn);
-void nn_backProp(NeuralNetwork *nn);
+void nn_backProp(NeuralNetwork *nn, char label);
 double GaussianRand();
 char nn_getResult(NeuralNetwork *nn);
 double nn_getCost(NeuralNetwork *nn);

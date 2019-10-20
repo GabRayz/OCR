@@ -77,8 +77,8 @@ void create_dataset_from_img(char *source, char *destination)
 {
     printf("Creating dataset from images...\n");
     // Check source path
-    DIR *dir = opendir(source);
-    if (dir == NULL)
+    DIR *src = opendir(source);
+    if (src == NULL)
     {
         printf("ERROR : source path invalid. Unable to create dataset from it.\n");
         return;
@@ -87,21 +87,23 @@ void create_dataset_from_img(char *source, char *destination)
     // Check destination path
     DIR *dest = opendir(destination);
     if (dest == NULL)
-    {
-        printf("Destination path does not exists. Creating it...\n");
-        mkdir(destination, 0700);
-    }
-    closedir(dest);
-    
+        mkdir(destination, 0755);
+    else
+        closedir(dest);
+
     struct dirent *file;
     int i = 0;
     char filepath[256];
-    // Skip self and parent directorie
-    readdir(dir);
-    readdir(dir);
+    // Skip self and parent directories
+    readdir(src);
+    readdir(src);
     // For each file in dir
-    while ((file = readdir(dir)) != NULL)
+    while ((file = readdir(src)) != NULL)
     {
+        // Skip hidden files
+        if (file->d_name[0] == '.')
+            continue;
+
         // open image of the line
         sprintf(filepath, "%s/%s", source, file->d_name);
         Img *img = img_import(filepath);
@@ -119,7 +121,7 @@ void create_dataset_from_img(char *source, char *destination)
         }
         i++;
     }
-    closedir(dir);
+    closedir(src);
     printf("Dataset created at : %s\n", destination);
 }
 
@@ -129,7 +131,8 @@ LinkedList *read_dataset(char *filepath)
     printf("Read dataset : %s\n", filepath);
     LinkedList *images = list_init();
     DIR *dir = opendir(filepath);
-    if (dir == NULL) {
+    if (dir == NULL)
+    {
         printf("ERROR : Dataset filepath does not exist.\n");
         exit(1);
     }

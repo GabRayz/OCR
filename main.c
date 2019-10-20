@@ -49,7 +49,7 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 
             // Send to the neural network
             // print_image(resized);
-            nn_compute(nn, resized->pixels, 100);
+            nn_compute(nn, resized->pixels);
             res[i] = nn_getResult(nn);
             // printf("%c\n", res[i]);
         }
@@ -64,6 +64,10 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
     res[i] = '\0';
 
     return res;
+}
+
+void save_res(char *res, char *filepath) {
+    FILE *file = fopen("res/res.txt", "r");
 }
 
 int write_dataset(int argc, char **argv)
@@ -113,24 +117,26 @@ int learn(int argc, char **argv)
 
 int read_image(int argc, char **argv)
 {
-    if (argc == 4)
+    if (argc != 4)
     {
-        printf("Importing image...\n");
-        Img *source = img_import(argv[3]);
-        LinkedList *chars = segmentation(source, true);
-
-        NeuralNetwork *nn = nn_load(argv[2]);
-        char *res = send_to_cerveau(source, chars, nn);
-        printf("%s\n", res);
-        return 0;
+        printf("Usage : ./ocr read {path to neural network} {path to image}\n");
+        printf("Exemple : ./ocr read save/Helve dataset/images/lorem.png\n");
+        return 1;
     }
-    printf("Usage : ./ocr read {path to neural network} {path to image}\n");
-    printf("Exemple : ./ocr read save/Helve dataset/images/lorem.png\n");
-    return 1;
+    printf("Importing image...\n");
+    Img *source = img_import(argv[3]);
+    LinkedList *chars = segmentation(source, true);
+
+    NeuralNetwork *nn = nn_load(argv[2]);
+    char *res = send_to_cerveau(source, chars, nn);
+
+    printf("Result: \n\n%s\n", res);
+    return 0;
 }
 
-int improve(int arc, char **argv)
+int improve(int argc, char **argv)
 {
+    //TODO : Add args handling
     NeuralNetwork *nn = nn_load("save/cervo1");
 
     LinkedList *list = read_dataset("dataset/training/set1");
@@ -142,24 +148,22 @@ int improve(int arc, char **argv)
     int cycles = atoi(argv[2]);
     train(nn, images, dataCount, cycles);
     nn_saveBinary(nn, "save/cervo1");
+    return 0;
 }
 
 int main(int argc, char **argv)
 {
     if (argc == 1)
-        init_window();
-    else
-    {
-        if (strcmp(argv[1], "write_dataset") == 0)
-            write_dataset(argc, argv);
-        else if (strcmp(argv[1], "learn") == 0)
-            learn(argc, argv);
-        else if (strcmp(argv[1], "read") == 0)
-            read_image(argc, argv);
-        else if (strcmp(argv[1], "improve") == 0)
-            improve(argc, argv);
-        else
-            printf("Usage: ./ocr write_dataset|learn|read|improve\n");
-    }
+        printf("Usage: ./ocr write_dataset|learn|read|improve\n");
+    else if (strcmp(argv[1], "write_dataset") == 0)
+        write_dataset(argc, argv);
+    else if (strcmp(argv[1], "learn") == 0)
+        learn(argc, argv);
+    else if (strcmp(argv[1], "read") == 0)
+        read_image(argc, argv);
+    else if (strcmp(argv[1], "improve") == 0)
+        improve(argc, argv);
+    else if (argc == 2)
+        init_window(argv[1]);
     return 0;
 }

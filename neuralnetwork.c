@@ -4,10 +4,10 @@
 #include "matrix.h"
 #include "neuralnetwork.h"
 #include "image.h"
+#include <assert.h>
 
 NeuralNetwork *nn_init(int *layerSizes, int layerCount)
 {
-    printf("Creating a neural network...\n");
     NeuralNetwork *nn = malloc(sizeof(NeuralNetwork));
     nn->layerCount = layerCount;
     nn->layerSizes = layerSizes;
@@ -97,27 +97,19 @@ void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
     }
 }
 
-void nn_compute(NeuralNetwork *nn, double *pixels, char label)
+void nn_compute(NeuralNetwork *nn, double *pixels)
 {
     /* 
     params:
         nn: Pointer to the Neural Network
         pixels: Pointer to the array of doubles representing the values of image's pixels
-        label: The id of the expected output neuron
 
     action:
         Init the first layer (nn_initFirstLayer)
         Set matrix y
         Compute the activations on each layer (nn_feedForward)
     */
-
     nn_initFirstLayer(nn, pixels);
-
-    m_delete(nn->y);
-
-    // Set the matrix of expected results
-    nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 1);
-    nn->y->content[label - 33][0] = 1.0;
 
     nn_feedForward(nn);
 }
@@ -189,8 +181,16 @@ void nn_feedForward(NeuralNetwork *nn)
     }
 }
 
-void nn_backProp(NeuralNetwork *nn)
+void nn_backProp(NeuralNetwork *nn, char label)
 {
+    assert(label >= 33);
+
+    m_delete(nn->y);
+
+    // Set the matrix of expected results
+    nn->y = m_init(nn->activations[nn->layerCount - 1]->height, 1);
+    nn->y->content[label - 33][0] = 1.0;
+
     // Compute the errors and each layer, then compute the gradient's component
 
     // Free previous errors
@@ -373,8 +373,8 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
         // print_image(img);
         // printf("%c %d\n", img->label, img->label);
 
-        nn_compute(nn, img->pixels, (int)img->label);
-        nn_backProp(nn);
+        nn_compute(nn, img->pixels);
+        nn_backProp(nn, (int)img->label);
 
         sum += (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
     }

@@ -21,14 +21,31 @@ LinkedList *segmentation(Img *source, bool whitespaces)
         while (l)
         {
             chars = list_concat(chars, character_split(source, l->data, whitespaces));
+            if (whitespaces)
+            {
+                Block *spacing = block_init();
+                spacing->label = ' ';
+
+                list_insert(chars, node_init(spacing));
+            }
+
             l = l->next;
+        }
+
+        if (whitespaces && p->next)
+        {
+            Block *newline = block_init();
+            newline->label = '\n';
+
+            list_insert(chars, node_init(newline));
+            list_insert(chars, node_init(newline));
         }
 
         // Maybe free lines with content & blocks ?
         p = p->next;
     }
     // Maybe free paragraphs with content & blocks ?
-    
+
     return chars;
 }
 
