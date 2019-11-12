@@ -7,6 +7,9 @@
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 #include <sys/stat.h>
 
+/**
+ * Concatenate two strings
+ */
 char *concat(char *a, char *b)
 {
     int len = strlen(a) + strlen(b) + 1;
@@ -18,9 +21,13 @@ char *concat(char *a, char *b)
     return res;
 }
 
+/**
+ * Take a set of Img structs containing a path to an image and loads the pixels into the struct.
+ * @param images Set of Img structs. Each img has to contain a path.
+ * @param dataCount Size of the Img set.
+ */
 void dataset_to_pixels(Img **images, int dataCount)
 {
-
     fputs("\e[?25l", stdout); /* hide the cursor */
 
     for (int i = 0; i < dataCount && images[i]; i++)
@@ -48,10 +55,13 @@ void dataset_to_pixels(Img **images, int dataCount)
 }
 const char *string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'()-_.,?!:;";
 
-/* 
- * Create an array of resized images from a list of blocks
+/**
+ * Create an array of resized images from a list of blocks. The final size is 28*28.
+ * @param source: A pointer to the source image.
+ * @param chars: A pointer to the linked list of blocks to resize.
+ * @param count: The number of blocks.
  * 
-*/
+ */
 Img **images_from_list(Img *source, LinkedList *chars, int *count)
 {
     int length = list_length(chars);
@@ -70,8 +80,10 @@ Img **images_from_list(Img *source, LinkedList *chars, int *count)
     return images;
 }
 
-/* 
- * Open the training images of lines and create training images of chars
+/**
+ * DEPRECATED. Open the training images of lines and create training images of chars.
+ * @param source: The path to the image to split.
+ * @param destination: The path where to save the dataset.
 */
 void create_dataset_from_img(char *source, char *destination)
 {
@@ -125,6 +137,11 @@ void create_dataset_from_img(char *source, char *destination)
     printf("Dataset created at : %s\n", destination);
 }
 
+/**
+ * Read a dataset. Open every images of the filepath and return a LinkedList of paths.
+ * You then need to call dataset_to_pixels to loads the pixels.
+ * @param filepath: path to the dataset folder to parse.
+ */
 LinkedList *read_dataset(char *filepath)
 {
     /* Read the dataset without knowing number of files */

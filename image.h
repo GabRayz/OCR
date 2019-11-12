@@ -1,6 +1,9 @@
 #ifndef IMG_H
 # define IMG_H
 
+/**
+ * Structure representing an image. Can contains a path, a label, the size and the pixels.
+ */
 typedef struct _Img
 {
     char label;

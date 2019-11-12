@@ -71,6 +71,9 @@ void nn_delete(NeuralNetwork *nn)
     free(nn); // Delete the struct
 }
 
+/**
+ * Sets all parameters randomly using a Gaussian distribution
+ */
 void nn_setupRandom(NeuralNetwork *nn)
 {
     // Initialize each biais and weights with random values
@@ -88,6 +91,9 @@ void nn_setupRandom(NeuralNetwork *nn)
     }
 }
 
+/**
+ * Sets the values of the first layer from an image to process it later.
+ */
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
 {
     // Set each neuron's value according to the pixels
@@ -97,6 +103,9 @@ void nn_initFirstLayer(NeuralNetwork *nn, double *pixels)
     }
 }
 
+/**
+ * Process an image.
+ */
 void nn_compute(NeuralNetwork *nn, double *pixels)
 {
     /* 
@@ -306,6 +315,9 @@ void nn_saveBinary(NeuralNetwork *nn, char *filepath)
     return;
 }
 
+/**
+ * Loads a saved neural network from the filepath.
+ */
 NeuralNetwork *nn_load(char *filepath)
 {
     printf("Loading the network...\n");
@@ -346,6 +358,9 @@ NeuralNetwork *nn_load(char *filepath)
     return nn;
 }
 
+/**
+ * Train a neural network from a set of images.
+ */
 void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
 {
     /* 
