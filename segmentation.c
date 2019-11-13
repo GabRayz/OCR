@@ -5,11 +5,12 @@
 #include "segmentation.h"
 #include <assert.h>
 #include <stdbool.h>
+#include <stdbool.h>
 
 LinkedList *segmentation(Img *source, bool whitespaces)
 {
     Block *block = img_make_block(source);
-    LinkedList *paragraphs = block_split_vertical(source, block);
+    LinkedList *paragraphs = block_split_vertical(source, block, true);
     LinkedList *chars = list_init();
     Img *par = img_from_block(source, paragraphs->start->data);
     img_save(par, "res/paragraph.png");
@@ -20,7 +21,8 @@ LinkedList *segmentation(Img *source, bool whitespaces)
     {
         LinkedList *lines = line_split(source, p->data);
         // For demo
-        if (i  == 0) {
+        if (i == 0)
+        {
             Img *li = img_from_block(source, lines->start->data);
             img_save(li, "res/line.png");
             i++;
@@ -207,27 +209,54 @@ double horizontal_white_rate(Img *image, Block *block, int y)
     return rate;
 }
 
-LinkedList *block_split_vertical(Img *image, Block *block)
+LinkedList *block_split_vertical(Img *image, Block *block, bool shouldRetry)
 {
     /* Split the block in two, put them in a linked list */
 
     // Remove margins
     remove_white_margin(image, block);
     int x = block->x;
+    int blackWidth = 0;
+    int whiteWidth = 0;
+    int currentColor = 0;
     // Go through columns until finding a white column
-    while (vertical_white_rate(image, block, x) < threshold && x < block->x + block->width)
+    while (whiteWidth <= blackWidth * 2 && x < block->x + block->width)
     {
+        double rate = vertical_white_rate(image, block, x);
+        // If line is black
+        if (rate < threshold)
+        {
+            blackWidth++;
+            // If the last line was white
+            if (currentColor == 1)
+            {
+                whiteWidth = 0;
+                blackWidth = 1;
+            }
+            currentColor = 0;
+        }
+        else if (blackWidth > 5)
+        {
+            whiteWidth++;
+            currentColor = 1;
+        }
         x++;
     }
+
     // If no cut is needed
     if (x == block->x + block->width)
     {
-        LinkedList *res = list_init();
-        // Put the main block in the list
-        Node *node = node_init(block);
-        res->start = node;
-        res->end = node;
-        return res;
+        if (shouldRetry)
+            return block_split_horizontal(image, block, false);
+        else
+        {
+            LinkedList *res = list_init();
+            // Put the main block in the list
+            Node *node = node_init(block);
+            res->start = node;
+            res->end = node;
+            return res;
+        }
     }
     // If the block has been cut
     Block *res1 = block_init();
@@ -244,12 +273,12 @@ LinkedList *block_split_vertical(Img *image, Block *block)
     res1->height = block->height;
     res2->y = block->y;
     res2->height = block->height;
-    LinkedList *child1 = block_split_horizontal(image, res1);
-    LinkedList *child2 = block_split_horizontal(image, res2);
+    LinkedList *child1 = block_split_horizontal(image, res1, false);
+    LinkedList *child2 = block_split_vertical(image, res2, true);
     return list_concat(child1, child2);
 }
 
-LinkedList *block_split_horizontal(Img *image, Block *block)
+LinkedList *block_split_horizontal(Img *image, Block *block, bool shouldRetry)
 {
     /* Split the block in two, put child blocks in a linked list */
 
@@ -289,12 +318,17 @@ LinkedList *block_split_horizontal(Img *image, Block *block)
     // If no cut is needed
     if (y == block->y + block->height)
     {
-        LinkedList *res = list_init();
-        // Put the main block in the list
-        Node *node = node_init(block);
-        res->start = node;
-        res->end = node;
-        return res;
+        if (shouldRetry)
+            return block_split_vertical(image, block, false);
+        else
+        {
+            LinkedList *res = list_init();
+            // Put the main block in the list
+            Node *node = node_init(block);
+            res->start = node;
+            res->end = node;
+            return res;
+        }
     }
     // If the block has been cut
     Block *res1 = block_init();
@@ -312,8 +346,8 @@ LinkedList *block_split_horizontal(Img *image, Block *block)
     res2->x = block->x;
     res2->width = block->width;
 
-    LinkedList *child1 = block_split_vertical(image, res1);
-    LinkedList *child2 = block_split_vertical(image, res2);
+    LinkedList *child1 = block_split_horizontal(image, res1, false);
+    LinkedList *child2 = block_split_vertical(image, res2, true);
 
     return list_concat(child1, child2);
 }

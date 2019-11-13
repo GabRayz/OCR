@@ -135,6 +135,7 @@ int read_image(int argc, char **argv)
     }
     printf("Importing image...\n");
     Img *source = img_import(argv[3]);
+    printf("Segmenting image...\n");
     LinkedList *chars = segmentation(source, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);
