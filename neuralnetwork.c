@@ -241,7 +241,9 @@ void nn_backProp(NeuralNetwork *nn, char label, int apply, int count)
     for (int l = 1; l < nn->layerCount; l++)
     {
         // nn->dWeights[l] = m_init(nn->weights[l]->height, nn->weights[l]->width);
+        Matrix *oldDBiaises = nn->dBiaises[l];
         nn->dBiaises[l] = m_add(nn->dBiaises[l], nn->errors[l]);
+        m_delete(oldDBiaises);
         for (int j = 0; j < nn->weights[l]->height; j++)
         {
             for (int i = 0; i < nn->weights[l]->width; i++)
