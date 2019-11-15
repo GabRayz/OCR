@@ -4,7 +4,7 @@
 #include "neuralnetwork.h"
 #include "segmentation.h"
 
-NeuralNetwork *create_nn(char *filepath, int cycles);
+NeuralNetwork *create_nn(char *filepath, int cycles, int count);
 char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn);
 void save_res(char *res, char *filepath);
 int write_dataset(int argc, char **argv);

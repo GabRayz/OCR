@@ -13,7 +13,7 @@
 #include "dataset.h"
 #include <sys/stat.h>
 
-NeuralNetwork *create_nn(char *filepath, int cycles)
+NeuralNetwork *create_nn(char *filepath, int cycles, int count)
 {
     // Create a neural network, initialize it randomly, and make it lear
     LinkedList *list = read_dataset(filepath);
@@ -30,7 +30,7 @@ NeuralNetwork *create_nn(char *filepath, int cycles)
     NeuralNetwork *nn = nn_init(layerSizes, 3);
     nn_setupRandom(nn);
 
-    train(nn, images, dataCount, cycles);
+    train(nn, images, dataCount, cycles, count);
     return nn;
 }
 
@@ -110,18 +110,19 @@ int learn(int argc, char **argv)
     //     nn_saveBinary(nn, "save/cervo1");
     //     return 0;
     // }
-    if (argc == 4 || argc == 5)
+    if (argc == 5 || argc == 6)
     {
         int cycles = atoi(argv[3]);
-        NeuralNetwork *nn = create_nn(argv[2], cycles);
-        if (argc == 5)
+        int count = atoi(argv[4]);
+        NeuralNetwork *nn = create_nn(argv[2], cycles, count);
+        if (argc == 6)
         {
-            nn_saveBinary(nn, argv[4]);
+            nn_saveBinary(nn, argv[5]);
         }
         return 0;
     }
-    printf("Usage : ./ocr learn {path to dataset directory} {cycles} [saving path]\n");
-    printf("Exemple : ./ocr learn dataset/training/set1 10000 save/Helve\n");
+    printf("Usage : ./ocr learn {path to dataset directory} {cycles} {training count by cycle} [saving path]\n");
+    printf("Exemple : ./ocr learn dataset/training/set1 10000 10 save/Helve\n");
     return 1;
 }
 

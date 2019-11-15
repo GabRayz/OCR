@@ -18,6 +18,7 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
     nn->activations = malloc(sizeof(Matrix *) * layerCount);
     nn->z = malloc(sizeof(Matrix *) * layerCount);
     nn->errors = malloc(sizeof(Matrix *) * layerCount);
+    nn->dBiaises = malloc(sizeof(Matrix *) * layerCount);
     nn->dWeights = malloc(sizeof(Matrix *) * layerCount);
     // Allocate the size of a Matrix for the expected result of the last layer.
     nn->y = m_init(layerSizes[layerCount - 1], 1);
@@ -28,14 +29,16 @@ NeuralNetwork *nn_init(int *layerSizes, int layerCount)
         if (l != 0) // Initializing biaises, weights and errors for the first layer is useless
         {
             nn->biaises[l] = m_init(layerSizes[l], 1);
+            nn->dBiaises[l] = m_init(layerSizes[l], 1);
+            nn->dWeights[l] = m_init(layerSizes[l], layerSizes[l - 1]);
             nn->z[l] = m_init(layerSizes[l], 1);
             nn->errors[l] = m_init(layerSizes[l], 1);
             nn->weights[l] = m_init(layerSizes[l], layerSizes[l - 1]);
-            nn->dWeights[l] = m_init(layerSizes[l], layerSizes[l - 1]);
         }
         else
         {
             nn->biaises[l] = NULL;
+            nn->dBiaises[l] = NULL;
             nn->z[l] = NULL;
             nn->errors[l] = NULL;
             nn->weights[l] = NULL;
@@ -54,6 +57,7 @@ void nn_delete(NeuralNetwork *nn)
         if (l != 0)
         {
             m_delete(nn->biaises[l]);
+            m_delete(nn->dBiaises[l]);
             m_delete(nn->z[l]);
             m_delete(nn->errors[l]);
             m_delete(nn->weights[l]);
@@ -62,6 +66,7 @@ void nn_delete(NeuralNetwork *nn)
 
     // Delete all lists
     free(nn->biaises);
+    free(nn->dBiaises);
     free(nn->weights);
     free(nn->activations);
     free(nn->z);
@@ -190,7 +195,7 @@ void nn_feedForward(NeuralNetwork *nn)
     }
 }
 
-void nn_backProp(NeuralNetwork *nn, char label)
+void nn_backProp(NeuralNetwork *nn, char label, int apply, int count)
 {
     assert(label >= 33);
 
@@ -206,18 +211,18 @@ void nn_backProp(NeuralNetwork *nn, char label)
     for (int l = 1; l < nn->layerCount; l++)
     {
         m_delete(nn->errors[l]);
-        m_delete(nn->dWeights[l]);
+        // m_delete(nn->dWeights[l]);
     }
-
     // Compute the error on the output layer
-    Matrix *costPrime = m_sub(nn->activations[nn->layerCount - 1], nn->y);
+    Matrix *sum = m_sub(nn->activations[nn->layerCount - 1], nn->y);
+    Matrix *costPrime = m_mult_num(sum, 1.0 / count);
     Matrix *zSigmoidPrime = m_sigmoid_prime(nn->z[nn->layerCount - 1]);
     // Matrix *zSigmoidPrime = m_softmax_prime(nn->z[nn->layerCount - 1]);
     nn->errors[nn->layerCount - 1] = m_hadamard(costPrime, zSigmoidPrime);
-
     // Free temporary matrices
     m_delete(costPrime);
     m_delete(zSigmoidPrime);
+    m_delete(sum);
 
     for (int l = nn->layerCount - 2; l > 0; l--)
     {
@@ -235,27 +240,35 @@ void nn_backProp(NeuralNetwork *nn, char label)
     // Compute the gradient's components
     for (int l = 1; l < nn->layerCount; l++)
     {
-        nn->dWeights[l] = m_init(nn->weights[l]->height, nn->weights[l]->width);
-        // nn->dBiaises[l] = nn->errors
+        // nn->dWeights[l] = m_init(nn->weights[l]->height, nn->weights[l]->width);
+        nn->dBiaises[l] = m_add(nn->dBiaises[l], nn->errors[l]);
         for (int j = 0; j < nn->weights[l]->height; j++)
         {
             for (int i = 0; i < nn->weights[l]->width; i++)
             {
                 // dC/dW = activation(previous layer) * error(current layer
-                nn->dWeights[l]->content[j][i] = nn->activations[l - 1]->content[i][0] * nn->errors[l]->content[j][0];
+                nn->dWeights[l]->content[j][i] += nn->activations[l - 1]->content[i][0] * nn->errors[l]->content[j][0];
             }
         }
     }
 
-    // Apply modifiers
-    for (int l = 1; l < nn->layerCount; l++)
+    if (apply)
     {
-        Matrix *oldBiaises = nn->biaises[l];
-        Matrix *oldWeights = nn->weights[l];
-        nn->biaises[l] = m_sub(nn->biaises[l], nn->errors[l]);
-        nn->weights[l] = m_sub(nn->weights[l], nn->dWeights[l]);
-        m_delete(oldBiaises);
-        m_delete(oldWeights);
+        // m_print(nn->dBiaises[1]);
+        // Apply modifiers
+        for (int l = 1; l < nn->layerCount; l++)
+        {
+            Matrix *oldBiaises = nn->biaises[l];
+            Matrix *oldWeights = nn->weights[l];
+            nn->biaises[l] = m_sub(nn->biaises[l], nn->dBiaises[l]);
+            nn->weights[l] = m_sub(nn->weights[l], nn->dWeights[l]);
+            m_delete(oldBiaises);
+            m_delete(oldWeights);
+            m_delete(nn->dBiaises[l]);
+            m_delete(nn->dWeights[l]);
+            nn->dBiaises[l] = m_init(nn->layerSizes[l], 1);
+            nn->dWeights[l] = m_init(nn->layerSizes[l], nn->layerSizes[l - 1]);
+        }
     }
 }
 
@@ -304,7 +317,7 @@ void nn_saveBinary(NeuralNetwork *nn, char *filepath)
             {
                 fwrite(&nn->weights[l]->content[y][x], sizeof(double), 1, file);
             }
-            
+
             // fwrite(&nn->weights[l]->content[y], sizeof(double)*nn->weights[l]->width, 1, file);
         }
     }
@@ -344,7 +357,7 @@ NeuralNetwork *nn_load(char *filepath)
             fread(nn->biaises[l]->content[y], sizeof(double), 1, file);
         }
     }
-    
+
     for (int l = 1; l < layerCount; l++)
     {
         for (int y = 0; y < nn->weights[l]->height; y++)
@@ -361,17 +374,18 @@ NeuralNetwork *nn_load(char *filepath)
 /**
  * Train a neural network from a set of images.
  */
-void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
+void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int count)
 {
     /* 
     Train the neural network with the given set of images
     */
-    if (cycles == 0) return;
+    if (cycles == 0)
+        return;
     printf("Training...\n");
     fputs("\e[?25l", stdout); /* hide the cursor */
     double sum = 0;
     double accuracy = 0;
-    for (int i = 0; i < cycles; i++)
+    for (int i = 0; i < cycles * count; i++)
     {
         if (i % 1000 == 0)
         {
@@ -382,14 +396,14 @@ void train(NeuralNetwork *nn, Img **images, int images_count, int cycles)
             accuracy = tmp;
             sum = 0;
         }
-        printf("\r%d / %d, accuracy = %lf", i + 1, cycles, accuracy);
+        printf("\r%d / %d, accuracy = %lf", i + 1, cycles * count, accuracy);
         unsigned int index = rand() % images_count;
         Img *img = images[index];
         // print_image(img);
         // printf("%c %d\n", img->label, img->label);
 
         nn_compute(nn, img->pixels);
-        nn_backProp(nn, (int)img->label);
+        nn_backProp(nn, (int)img->label, i % count == 0, count);
 
         sum += (nn_getResult(nn) == img->label) ? 1.0 : 0.0;
     }

@@ -34,6 +34,7 @@ typedef struct _NeuralNetwork {
 
     Matrix** errors;
     Matrix** dWeights;
+    Matrix** dBiaises;
 
 } NeuralNetwork;
 
@@ -44,13 +45,13 @@ void nn_compute(NeuralNetwork *nn, double *pixels);
 void nn_setupRandom(NeuralNetwork *nn);
 void nn_initFirstLayer(NeuralNetwork *nn, double *pixels);
 void nn_feedForward(NeuralNetwork *nn);
-void nn_backProp(NeuralNetwork *nn, char label);
+void nn_backProp(NeuralNetwork *nn, char label, int apply, int count);
 double GaussianRand();
 char nn_getResult(NeuralNetwork *nn);
 double nn_getCost(NeuralNetwork *nn);
 void nn_saveBinary(NeuralNetwork *nn, char *filepath);
 NeuralNetwork *nn_load(char *filepath);
-void train(NeuralNetwork *nn, Img **images, int images_count, int cycles);
+void train(NeuralNetwork *nn, Img **images, int images_count, int cycles, int count);
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
