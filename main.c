@@ -157,7 +157,7 @@ int ccl(int argc, char **argv)
     }
     Img *source = img_import(argv[2]);
     Block *block = img_make_block(source);
-    ccl_segmentation(source, block);
+    LinkedList *images = ccl_segmentation(source, block);
     return 0;
 }
 

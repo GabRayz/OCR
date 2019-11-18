@@ -15,7 +15,7 @@ typedef struct _Img
 
 #include "segmentation.h"
 
-Img *img_init();
+Img *img_init(int width, int height);
 
 Img *img_import(char *filepath);
 void print_image(Img *image);
