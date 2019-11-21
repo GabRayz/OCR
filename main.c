@@ -12,6 +12,7 @@
 #include <assert.h>
 #include "dataset.h"
 #include <sys/stat.h>
+#include "ccl.h"
 
 NeuralNetwork *create_nn(char *filepath, int cycles, int count)
 {
@@ -147,22 +148,18 @@ int read_image(int argc, char **argv)
     return 0;
 }
 
-// int improve(int argc, char **argv)
-// {
-//     //TODO : Add args handling
-//     NeuralNetwork *nn = nn_load("save/cervo1");
-
-//     LinkedList *list = read_dataset("dataset/training/set1");
-
-//     int dataCount = list_length(list);
-//     Img **images = (Img **)list_to_array(list);
-//     dataset_to_pixels(images, dataCount);
-
-//     int cycles = atoi(argv[2]);
-//     train(nn, images, dataCount, cycles);
-//     nn_saveBinary(nn, "save/cervo1");
-//     return 0;
-// }
+int ccl(int argc, char **argv)
+{
+    if (argc != 4)
+    {
+        printf("Usage: ./ocr ccl {path to source image} {destination}\n");
+        return 1;
+    }
+    Img *source = img_import(argv[2]);
+    Block *block = img_make_block(source);
+    LinkedList *images = ccl_segmentation(source, block);
+    return 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -181,8 +178,8 @@ int main(int argc, char **argv)
         learn(argc, argv);
     else if (strcmp(argv[1], "read") == 0)
         read_image(argc, argv);
-    // else if (strcmp(argv[1], "improve") == 0)
-    //     improve(argc, argv);
+    else if (strcmp(argv[1], "ccl") == 0)
+        ccl(argc, argv);
     else if (argc == 2)
         init_window(argv[1]);
     return 0;
