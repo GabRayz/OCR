@@ -150,14 +150,13 @@ int read_image(int argc, char **argv)
 
 int ccl(int argc, char **argv)
 {
-    if (argc != 4)
+    if (argc != 3)
     {
-        printf("Usage: ./ocr ccl {path to source image} {destination}\n");
+        printf("Usage: ./ocr ccl {path to source image}\n");
         return 1;
     }
     Img *source = img_import(argv[2]);
-    Block *block = img_make_block(source);
-    LinkedList *images = ccl_segmentation(source, block);
+    LinkedList *chars = ccl_segmentation(source, true);
     return 0;
 }
 

@@ -4,7 +4,8 @@
 #include "image.h"
 #include "segmentation.h"
 
-LinkedList *ccl_segmentation(Img *source, Block *block);
+LinkedList *ccl_segmentation(Img *source, bool whitespaces);
+LinkedList *ccl_segment_block(Img *source, Block *block);
 void hist_print(int *hist, int width, int height);
 LinkedList *hist_to_images(Block *block, LinkedList *labels, int *hist);
 void print_ccl(Img *source, LinkedList *labels);

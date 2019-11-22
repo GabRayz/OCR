@@ -4,8 +4,49 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+LinkedList *ccl_segmentation(Img *source, bool whitespaces)
+{
+    Block *block = img_make_block(source);
+    LinkedList *paragraphs = block_split_vertical(source, block, true);
+    LinkedList *chars = list_init();
 
-LinkedList *ccl_segmentation(Img *source, Block *block)
+    Node *p = paragraphs->start;
+    while (p)
+    {
+        LinkedList *lines = line_split(source, p->data);
+        Node *l = lines->start;
+        while (l)
+        {
+            // TODO: Add whitespaces between characters
+            chars = list_concat(chars, ccl_segment_block(source, l->data));
+            if (whitespaces)
+            {
+                Block *spacing = block_init();
+                spacing->label = ' ';
+
+                list_insert(chars, node_init(spacing));
+            }
+
+            l = l->next;
+        }
+
+        if (whitespaces && p->next)
+        {
+            Block *newline = block_init();
+            newline->label = '\n';
+
+            list_insert(chars, node_init(newline));
+            list_insert(chars, node_init(newline));
+        }
+
+        // Maybe free lines with content & blocks ?
+        p = p->next;
+    }
+    // Maybe free paragraphs with content & blocks ?
+    return chars;
+}
+
+LinkedList *ccl_segment_block(Img *source, Block *block)
 {
     int *hist = calloc(block->width * block->height, sizeof(int));
     LinkedList *labels = create_hist(source, block, hist);
@@ -112,7 +153,7 @@ void propagate(Img *source, Block *block, Block *current, int *hist, int x, int 
         current->y = y;
     if (x - current->x + 1 > current->width)
         current->width = x - current->x + 1;
-    if (y - current->y + 1> current->height)
+    if (y - current->y + 1 > current->height)
         current->height = y - current->y + 1;
     for (int i = -1; i < 2; i++)
     {

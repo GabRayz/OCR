@@ -14,7 +14,6 @@ LinkedList *segmentation(Img *source, bool whitespaces)
     LinkedList *chars = list_init();
 
     Node *p = paragraphs->start;
-    int i = 0;
     while (p)
     {
         LinkedList *lines = line_split(source, p->data);
@@ -46,7 +45,6 @@ LinkedList *segmentation(Img *source, bool whitespaces)
         p = p->next;
     }
     // Maybe free paragraphs with content & blocks ?
-    Img *ch = img_from_block(source, chars->start->data);
     return chars;
 }
 
