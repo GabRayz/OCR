@@ -7,19 +7,29 @@
 #include "neuralnetwork.h"
 #include "main.h"
 
+char *call_nn(Img *img)
+{
+	LinkedList *chars = segmentation(img, true);
+	NeuralNetwork *nn = nn_load("save/all");
+	char* res = send_to_cerveau(img,chars,nn);
+	return res;
+}
 
 void init_window(char *filepath)
 {
 
 	//Create Window
 	SDL_Window *screen = NULL;
+
 	SDL_Init(SDL_INIT_VIDEO);
 	TTF_Init();
+	
 
 	int right = 563;
 	int left = 702;
 	int height = 795;
 	int width = right + left;
+	int margin = 10;
 
 	screen = SDL_CreateWindow("OCR - Les Croisillons", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
 	if (screen == NULL)
@@ -49,6 +59,13 @@ void init_window(char *filepath)
 	dragdrop_pos.x = 563;
 	dragdrop_pos.y = 0;
 	SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
+
+	//Create rght area side from img
+	SDL_Surface *right_area;
+	right_area = IMG_Load("Img/RightArea.png");
+	SDL_Rect right_area_pos;
+	right_area_pos.x = 563;
+	right_area_pos.y = 0;
 
 	//Create GroupName from img
 	SDL_Surface *group_name;
@@ -82,21 +99,21 @@ void init_window(char *filepath)
 	int menu_step = 60;
 
 	SDL_Surface *add;
-	add = TTF_RenderUTF8_Blended(font, "GRAYSCALE & BW", font_color);
+	add = TTF_RenderUTF8_Blended(font, "ADD FILES", font_color);
 	SDL_Rect add_pos;
 	add_pos.x = menu_x;
 	add_pos.y = menu_y;
 	SDL_BlitSurface(add, NULL, pScreen, &add_pos);
 
 	SDL_Surface *saved;
-	saved = TTF_RenderUTF8_Blended(font, "PARAGRAPHS DETECTION", font_color);
+	saved = TTF_RenderUTF8_Blended(font, "SAVED FILES", font_color);
 	SDL_Rect saved_pos;
 	saved_pos.x = menu_x;
 	saved_pos.y = menu_y + menu_step;
 	SDL_BlitSurface(saved, NULL, pScreen, &saved_pos);
 
 	SDL_Surface *settings;
-	settings = TTF_RenderUTF8_Blended(font, "LINES DETECTION", font_color);
+	settings = TTF_RenderUTF8_Blended(font, "SETTINGS", font_color);
 	SDL_Rect settings_pos;
 	settings_pos.x = menu_x;
 	settings_pos.y = menu_y + menu_step * 2;
@@ -116,53 +133,67 @@ void init_window(char *filepath)
 	process_pos.y = menu_y + menu_step * 4;
 	SDL_BlitSurface(process, NULL, pScreen, &process_pos);
 
+	SDL_Surface *digitalize;
+	digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
+	SDL_Rect digitalize_pos;
+	digitalize_pos.x = 220;
+	digitalize_pos.y = 710;
 
-	// To implement later
-	// SDL_Surface *digitalize;
-	// digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
-	// SDL_Rect digitalize_pos;
-	// digitalize_pos.x = 560;
-	// digitalize_pos.y = 660;
+	SDL_Surface *save_btn;
+	save_btn = TTF_RenderUTF8_Blended(font, "SAVE", font_color);
+	SDL_Rect save_btn_pos;
+	save_btn_pos.x = 870;
+	save_btn_pos.y = 710;
+
 
 	//Process button
 	SDL_Surface *digitalize_btn;
 	digitalize_btn = IMG_Load("Img/Btn.png");
 	SDL_Rect digitalize_btn_pos;
-	digitalize_btn_pos.x = 450;
-	digitalize_btn_pos.y = 600;
+	digitalize_btn_pos.x = 100;
+	digitalize_btn_pos.y = 650;
 	int display_btn = 0;
+
+	//Save buton
+	SDL_Rect saved_btn_pos;
+	saved_btn_pos.x = 720;
+	saved_btn_pos.y = 650;
+	int display_btn2 = 0;
 
 	//Load neural network & run 
 	SDL_Surface *image;
 	image = IMG_Load(filepath);
-	Img *img = img_import(filepath);
-    img_save(img, "res/bw.png");
-    LinkedList *chars = segmentation(img, true);
-	NeuralNetwork *nn = nn_load("save/all");
-	char* res = send_to_cerveau(img,chars,nn);
-
+	// Img *img = img_import(filepath);
+    // img_save(img, "res/bw.png");
+    // LinkedList *chars = segmentation(img, true);
+	// NeuralNetwork *nn = nn_load("save/all");
+	// char* res = send_to_cerveau(img,chars,nn);
+	
 	SDL_Surface *result;
-	result = TTF_RenderUTF8_Blended(font, res, black);
+	// result = TTF_RenderText_Blended_Wrapped(font, res, black,left-margin*2);
 	SDL_Rect result_pos;
-	result_pos.x = dragdrop_pos.x;
-	result_pos.y = dragdrop_pos.y;
+	result_pos.x = dragdrop_pos.x+margin;
+	result_pos.y = dragdrop_pos.y+margin;
+	// SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 	
 	SDL_Rect display_img_pos;
-	display_img_pos.x = right;
+	display_img_pos.x = 0;
 	display_img_pos.y = 0;
-	display_img_pos.w = left;
+	display_img_pos.w = right;
 	display_img_pos.h = height;
-	float w = image->w;
-	float h = image->h;
-	display_img_pos.h = left * h / w;
-	display_img_pos.y = (height / 2) - (h / 4);
-	if(image != NULL)
-	{
-		SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
-	}
-
+	display_img_pos.y = 100;
+	// display_img_pos.h = left * h / w;
+	// display_img_pos.y = (height / 2) - (h / 4);
+	// if(image != NULL)
+	// {
+	// 	SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+	// }
+	
 	//Refresh the screen
 	SDL_UpdateWindowSurface(screen);
+
+	//Cursor
+	SDL_Cursor *cursor = SDL_GetCursor();
 
 	//Event Loop
 	int run = 1;
@@ -170,9 +201,10 @@ void init_window(char *filepath)
 
 	//Enable drop file
 	char *dropped_filedir;
-	char *file_ext = "";
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	int file_dropped = 0;
+	Img *img;
+	char* res;
 	while (run)
 	{
 		SDL_WaitEvent(&event);
@@ -228,14 +260,26 @@ void init_window(char *filepath)
 			// If clicked on recognize
 			else if (isClicked(event.button, process_pos, btn_height, btn_width))
 			{
-				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				result_pos.w = 300;
-				SDL_BlitSurface(result, NULL, pScreen, &result_pos);
+				// SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
+				// result_pos.w = 300;
+				// SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 			}
 			// If clicked on DIGITALIZE
 			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & display_btn)
 			{
-				run = 0;
+				res = call_nn(img);
+				SDL_BlitSurface(right_area, NULL, pScreen, &right_area_pos);
+				result = TTF_RenderText_Blended_Wrapped(font, res, black,left-margin*2);
+				SDL_BlitSurface(result, NULL, pScreen, &result_pos);
+
+				display_btn2 = 1;
+				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
+				SDL_BlitSurface(save_btn,NULL,pScreen, &save_btn_pos);
+			}
+			// If clicked on SAVE
+			else if (isClicked(event.button, saved_btn_pos, 184, 368) & display_btn2)
+			{
+				printf("saved!");
 			}
 			break;
 		case (SDL_DROPFILE):
@@ -243,15 +287,13 @@ void init_window(char *filepath)
 			// In case if dropped file
 			dropped_filedir = event.drop.file;
 
-			printf("%s", file_ext);
-			Img *source = img_import(dropped_filedir);
+			printf("%s\n", dropped_filedir);
+			img = img_import(dropped_filedir);
 
-			if (source)
+			if (img)
 			{
-				// SDL_BlitSurface(gradient,NULL,pScreen, &gradient_pos);
-
-				// //Display Name
-				// SDL_BlitSurface(group_name,NULL,pScreen, &group_name_pos);
+				SDL_BlitSurface(gradient, NULL, pScreen, &gradient_pos);
+				SDL_BlitSurface(group_name, NULL, pScreen, &group_name_pos);
 
 				//Resize and Display image to the left
 				image = IMG_Load(dropped_filedir);
@@ -261,11 +303,10 @@ void init_window(char *filepath)
 				SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(image);
 
-				// //Blit process_btn
-				// display_btn = 1;
-				// SDL_BlitSurface(process_btn,NULL,pScreen, &process_btn_pos);
-
-				// SDL_BlitSurface(process,NULL,pScreen,&process_pos);
+				//Blit process_btn
+				display_btn = 1;
+				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &digitalize_btn_pos);
+				SDL_BlitSurface(digitalize,NULL,pScreen, &digitalize_pos);
 
 				//Refresh the screen
 				SDL_UpdateWindowSurface(screen);
@@ -290,6 +331,16 @@ void init_window(char *filepath)
 					// Put code for handling "scroll down" here!
 				}
 			}
+			break;
+		}
+
+		case (SDL_MOUSEMOTION):
+		{
+			if(isOver(event.motion, digitalize_btn_pos, 184, 368) & display_btn)
+			{
+				//change cursor to the clickable one
+			}
+			break;
 		}
 		}
 		//Refresh the screen
@@ -307,7 +358,8 @@ void init_window(char *filepath)
 	SDL_FreeSurface(process);
 	SDL_FreeSurface(digitalize_btn);
 	SDL_FreeSurface(image);
-	SDL_FreeSurface(result);
+	SDL_FreeSurface(right_area);
+	//SDL_FreeSurface(result);
 
 	TTF_CloseFont(font);
 	TTF_Quit();
@@ -315,6 +367,11 @@ void init_window(char *filepath)
 }
 
 int isClicked(SDL_MouseButtonEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
+{
+	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
+}
+
+int isOver(SDL_MouseMotionEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
 {
 	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
 }
