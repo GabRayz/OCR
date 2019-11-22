@@ -32,6 +32,8 @@ Img *img_import(char *filepath)
     if (MagickReadImage(wand, filepath) == MagickFalse)
     {
         printf("Error: Couldn't open image\n");
+        ExceptionType type = MagickGetExceptionType(wand);
+        printf("%s\n", MagickGetException(wand, &type));
         exit(1);
     }
     int height = MagickGetImageHeight(wand);
