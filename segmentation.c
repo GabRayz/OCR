@@ -12,7 +12,6 @@ LinkedList *segmentation(Img *source, bool whitespaces)
     Block *block = img_make_block(source);
     LinkedList *paragraphs = block_split_vertical(source, block, true);
     LinkedList *chars = list_init();
-    Img *par = img_from_block(source, paragraphs->start->data);
 
     Node *p = paragraphs->start;
     int i = 0;
