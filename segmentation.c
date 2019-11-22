@@ -208,7 +208,7 @@ LinkedList *block_split_vertical(Img *image, Block *block, bool shouldRetry)
     int whiteWidth = 0;
     int currentColor = 0;
     // Go through columns until finding a white column
-    while (whiteWidth <= blackWidth * 2 && x < block->x + block->width)
+    while (whiteWidth <= 20 && x < block->x + block->width)
     {
         double rate = vertical_white_rate(image, block, x);
         // If line is black
