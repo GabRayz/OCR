@@ -35,6 +35,13 @@ NeuralNetwork *create_nn(char *filepath, int cycles, int count)
     return nn;
 }
 
+/**
+ * Send characters to a neural network for recognition.
+ * It removes the margin of each characters and resize them.
+ * @param source: source image of the text
+ * @param chars: linked list of characters (Blocks)
+ * @param nn: the neural network to use
+ */
 char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
 {
     char *res = malloc(sizeof(char) * list_length(chars) + 1);
@@ -50,10 +57,8 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
             Img *resized = img_resize(source, block, 28, 28);
 
             // Send to the neural network
-            // print_image(resized);
             nn_compute(nn, resized->pixels);
             res[i] = nn_getResult(nn);
-            // printf("%c\n", res[i]);
         }
         else
         {
@@ -61,6 +66,37 @@ char *send_to_cerveau(Img *source, LinkedList *chars, NeuralNetwork *nn)
         }
 
         n = n->next;
+        i++;
+    }
+    res[i] = '\0';
+
+    return res;
+}
+
+char *send_images_to_cerveau(LinkedList *images, NeuralNetwork *nn)
+{
+    char *res = malloc(sizeof(char) * list_length(images) + 1);
+    Node *node = images->start;
+    int i = 0;
+    while (node)
+    {
+        Block *block = img_make_block(node->data);
+
+        if (block->label == '\0')
+        {
+            remove_white_margin(node->data, block);
+            Img *resized = img_resize(node->data, block, 28, 28);
+
+            // Send to the neural network
+            nn_compute(nn, resized->pixels);
+            res[i] = nn_getResult(nn);
+        }
+        else
+        {
+            res[i] = block->label;
+        }
+
+        node = node->next;
         i++;
     }
     res[i] = '\0';
@@ -83,12 +119,6 @@ void save_res(char *res, char *filepath)
 
 int write_dataset(int argc, char **argv)
 {
-    // If there is no more arguments, take default values
-    // if (argc == 2)
-    // {
-    //     create_dataset_from_img("dataset/images/training", "dataset/training/set1");
-    //     return 0;
-    // }
     if (argc != 4)
     {
         printf("Usage : ./ocr write_dataset {path to source dir} {path to training data dir}\n");
@@ -104,13 +134,6 @@ int write_dataset(int argc, char **argv)
 
 int learn(int argc, char **argv)
 {
-    // If there is no more args, take default values
-    // if (argc == 2)
-    // {
-    //     NeuralNetwork *nn = create_nn("dataset/training/set1", 50000);
-    //     nn_saveBinary(nn, "save/cervo1");
-    //     return 0;
-    // }
     if (argc == 5 || argc == 6)
     {
         int cycles = atoi(argv[3]);
@@ -150,13 +173,17 @@ int read_image(int argc, char **argv)
 
 int ccl(int argc, char **argv)
 {
-    if (argc != 3)
+    if (argc != 4)
     {
-        printf("Usage: ./ocr ccl {path to source image}\n");
+        printf("Usage: ./ocr ccl {path to nn} {path to source image}\n");
         return 1;
     }
-    Img *source = img_import(argv[2]);
-    LinkedList *chars = ccl_segmentation(source, true);
+    Img *source = img_import(argv[3]);
+    LinkedList *images = ccl_segmentation(source, true);
+
+    NeuralNetwork *nn = nn_load(argv[2]);
+    char *res = send_images_to_cerveau(images, nn);
+    printf("Result: \n\n%s\n", res);
     return 0;
 }
 
