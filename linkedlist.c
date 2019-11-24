@@ -49,6 +49,25 @@ void list_insert(LinkedList *list, Node *node)
     }
 }
 
+void list_remove(LinkedList *list, Node *node)
+{
+    assert(list != NULL && node != NULL);
+
+    if (list->start == node)
+        list->start = node->next;
+
+    if (list->end == node)
+        list->end = node->previous;
+
+    if (node->previous != NULL)
+        node->previous->next = node->next;
+
+    if (node->next != NULL)
+        node->next->previous = node->previous;
+
+    node_free(node);
+}
+
 int list_length(LinkedList *list)
 {
     int res = 0;
@@ -108,7 +127,7 @@ void **list_to_array(LinkedList *list)
         n = n->next;
         i++;
     }
-    res[i] = NULL; 
+    res[i] = NULL;
 
     return res;
 }

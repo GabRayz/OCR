@@ -3,7 +3,12 @@
 #include "segmentation.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
+/**
+ * Main function for segmentation with ccl process.
+ * Split an image in paragraphs, then in lines, then in characters.
+ */
 LinkedList *ccl_segmentation(Img *source, bool whitespaces)
 {
     Block *block = img_make_block(source);
@@ -46,10 +51,14 @@ LinkedList *ccl_segmentation(Img *source, bool whitespaces)
     return chars;
 }
 
+/**
+ * Segment a line
+ */
 LinkedList *ccl_segment_block(Img *source, Block *block)
 {
     int *hist = calloc(block->width * block->height, sizeof(int));
     LinkedList *labels = create_hist(source, block, hist);
+    merge_labels(block, labels, hist);
     return hist_to_images(block, labels, hist);
 }
 
@@ -69,11 +78,12 @@ LinkedList *hist_to_images(Block *block, LinkedList *labels, int *hist)
 {
     LinkedList *res = list_init();
     int currentLabel = 1;
-    Node *n = labels->start;
-    while (n)
+    Node *charBlock = labels->start;
+    while (charBlock)
     {
-        Block *b = n->data;
+        Block *b = charBlock->data;
         Img *image = img_init(b->width, b->height);
+        bool found = false;
         for (int y = 0; y < b->height; y++)
         {
             for (int x = 0; x < b->width; x++)
@@ -81,14 +91,75 @@ LinkedList *hist_to_images(Block *block, LinkedList *labels, int *hist)
                 if (hist[(y + b->y) * block->width + x + b->x] == currentLabel)
                 {
                     image->pixels[y * b->width + x] = 0;
+                    found = true;
                 }
             }
         }
-        list_insert(res, node_init(image));
-        n = n->next;
+        if (found)
+        {
+            list_insert(res, node_init(image));
+            charBlock = charBlock->next;
+        }
+        else
+        {
+            img_delete(image);
+        }
         currentLabel++;
     }
     return res;
+}
+
+void merge_labels(Block *block, LinkedList *labels, int *hist)
+{
+    Node *current = labels->start;
+    int currentLabel = 1;
+    while (current)
+    {
+        merge_two(block, labels, current->previous, current, hist, currentLabel);
+
+        merge_two(block, labels, current->next, current, hist, currentLabel);
+
+        current = current->next;
+        currentLabel++;
+    }
+}
+
+void merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *hist, int currentLabel)
+{
+    if (src == NULL)
+        return;
+
+    Block *srcB = src->data;
+    Block *dstB = dst->data;
+
+    // We process only if srcB is contained in dstB
+    if (srcB->x < dstB->x || dstB->x + dstB->width > srcB->x + srcB->width)
+        return;
+
+    // Merge
+    for (int y = 0; y < srcB->height; y++)
+    {
+        for (int x = 0; x < srcB->width; x++)
+        {
+            if (hist[y * lineBlock->width + x] == currentLabel - 1)
+            {
+                hist[y * lineBlock->width + x] = currentLabel;
+            }
+        }
+    }
+
+    if (srcB->y < dstB->y)
+    {
+        dstB->height += dstB->y - srcB->y;
+        dstB->y = srcB->y;
+    }
+
+    if (srcB->y + srcB->height > dstB->y + dstB->height)
+    {
+        // dstB->height += srcB->y + srcB->height - (dstB->y + dstB->height);
+        dstB->height = srcB->y + srcB->height - dstB->y;
+    }
+    list_remove(labels, src);
 }
 
 void print_ccl(Img *source, LinkedList *labels)
@@ -138,6 +209,9 @@ LinkedList *create_hist(Img *source, Block *block, int *hist)
     return labels;
 }
 
+/**
+ * Complete a labeled content from a starting pixel
+ */
 void propagate(Img *source, Block *block, Block *current, int *hist, int x, int y, int currentLabel)
 {
     // Check if the pixel exists and is not labeled
