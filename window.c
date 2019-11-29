@@ -2,10 +2,41 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include <dirent.h>
 #include "window.h"
 #include "image.h"
 #include "neuralnetwork.h"
 #include "main.h"
+
+void open_file_browser()
+{
+	//xdg-open /path	
+}
+
+int count_saved_files()
+{
+	int count = 0;
+	DIR *src = opendir("res");
+	struct dirent *file;
+	while ((file = readdir(src)) != NULL)
+    {
+		count++;
+	}
+	return count;
+}
+void save_result(char *res, char *filepath)
+{
+    FILE *file = fopen("res/res.txt", "w");
+    if (file == NULL)
+    {
+        printf("Failed to save the result\n");
+        return;
+    }
+    fprintf(file, "%s", res);
+    fclose(file);
+    printf("Result saved at: %s\n", filepath);
+}
+
 
 char *call_nn(Img *img)
 {
@@ -145,6 +176,12 @@ void init_window(char *filepath)
 	save_btn_pos.x = 870;
 	save_btn_pos.y = 710;
 
+	SDL_Surface *save_at_btn;
+	save_at_btn = TTF_RenderUTF8_Blended(font, "SAVED AT RES/", font_color);
+	SDL_Rect save_at_btn_pos;
+	save_at_btn_pos.x = 820;
+	save_at_btn_pos.y = 710;
+
 
 	//Process button
 	SDL_Surface *digitalize_btn;
@@ -204,7 +241,8 @@ void init_window(char *filepath)
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	int file_dropped = 0;
 	Img *img;
-	char* res;
+	char *res;
+	char *nb_file = "0";
 	while (run)
 	{
 		SDL_WaitEvent(&event);
@@ -224,16 +262,13 @@ void init_window(char *filepath)
 			break;
 
 		case SDL_MOUSEBUTTONUP:
-			// If clicked on Grayscale
+			// If clicked on ADD FILE
 			if (isClicked(event.button, add_pos, btn_height, btn_width))
 			{
-				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				SDL_Surface* paragraph = IMG_Load("res/bw.png");
-				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
-				SDL_FreeSurface(paragraph);
-
+				// xdg-open /
+				open_file_browser();
 			}
-			// If clicked on paragraphes
+			// If clicked on paragraphs
 			else if (isClicked(event.button, saved_pos, btn_height, btn_width))
 			{
 				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
@@ -279,7 +314,16 @@ void init_window(char *filepath)
 			// If clicked on SAVE
 			else if (isClicked(event.button, saved_btn_pos, 184, 368) & display_btn2)
 			{
-				printf("saved!");
+				char *buffer[4];
+				nb_file = SDL_itoa(count_saved_files(),buffer,2);
+				// char *c = concat("res/", nb_file);
+				// printf("%s",c);
+				//save_result(res,c);
+
+				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
+
+				SDL_BlitSurface(save_at_btn,NULL,pScreen, &save_at_btn_pos);
+				display_btn2 = 0;
 			}
 			break;
 		case (SDL_DROPFILE):
