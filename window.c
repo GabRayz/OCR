@@ -8,6 +8,7 @@
 #include "neuralnetwork.h"
 #include "main.h"
 
+
 void open_file_browser()
 {
 	//xdg-open /path	
@@ -143,26 +144,26 @@ void init_window(char *filepath)
 	saved_pos.y = menu_y + menu_step;
 	SDL_BlitSurface(saved, NULL, pScreen, &saved_pos);
 
-	SDL_Surface *settings;
-	settings = TTF_RenderUTF8_Blended(font, "SETTINGS", font_color);
-	SDL_Rect settings_pos;
-	settings_pos.x = menu_x;
-	settings_pos.y = menu_y + menu_step * 2;
-	SDL_BlitSurface(settings, NULL, pScreen, &settings_pos);
+	// SDL_Surface *settings;
+	// settings = TTF_RenderUTF8_Blended(font, "SETTINGS", font_color);
+	// SDL_Rect settings_pos;
+	// settings_pos.x = menu_x;
+	// settings_pos.y = menu_y + menu_step * 2;
+	// SDL_BlitSurface(settings, NULL, pScreen, &settings_pos);
 
 	SDL_Surface *quit;
-	quit = TTF_RenderUTF8_Blended(font, "CHARACTERS DETECTION", font_color);
+	quit = TTF_RenderUTF8_Blended(font, "QUIT", font_color);
 	SDL_Rect quit_pos;
 	quit_pos.x = menu_x;
-	quit_pos.y = menu_y + menu_step * 3;
+	quit_pos.y = menu_y + menu_step * 4;
 	SDL_BlitSurface(quit, NULL, pScreen, &quit_pos);
 
-	SDL_Surface *process;
-	process = TTF_RenderUTF8_Blended(font, "RECOGNITION", font_color);
-	SDL_Rect process_pos;
-	process_pos.x = menu_x;
-	process_pos.y = menu_y + menu_step * 4;
-	SDL_BlitSurface(process, NULL, pScreen, &process_pos);
+	// SDL_Surface *process;
+	// process = TTF_RenderUTF8_Blended(font, "RECOGNITION", font_color);
+	// SDL_Rect process_pos;
+	// process_pos.x = menu_x;
+	// process_pos.y = menu_y + menu_step * 4;
+	// SDL_BlitSurface(process, NULL, pScreen, &process_pos);
 
 	SDL_Surface *digitalize;
 	digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
@@ -243,6 +244,7 @@ void init_window(char *filepath)
 	Img *img;
 	char *res;
 	int nb_file;
+	int curr_y = 1;
 	while (run)
 	{
 		SDL_WaitEvent(&event);
@@ -263,51 +265,29 @@ void init_window(char *filepath)
 
 		case SDL_MOUSEBUTTONUP:
 			// If clicked on ADD FILE
-			if (isClicked(event.button, add_pos, btn_height, btn_width))
+			if (isClicked(event.button, add_pos, btn_height, btn_width)& !display_btn)
 			{
 				// xdg-open /
 				open_file_browser();
 			}
-			// If clicked on paragraphs
-			else if (isClicked(event.button, saved_pos, btn_height, btn_width))
-			{
-				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
-				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
-				SDL_FreeSurface(paragraph);
-			}
-			// If clicked on lines
-			else if (isClicked(event.button, settings_pos, btn_height, btn_width))
-			{
-				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				SDL_Surface* line = IMG_Load("res/line.png");
-				SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
-				SDL_FreeSurface(line);
-			}
 			// If clicked on characters
-			else if (isClicked(event.button, quit_pos, btn_height, btn_width))
+			else if (isClicked(event.button, quit_pos, btn_height, btn_width) & !display_btn)
 			{
-				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				
-				SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
-				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
-				SDL_FreeSurface(paragraph);
-
-				SDL_Surface* line = IMG_Load("res/line.png");
-				SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
-				SDL_FreeSurface(line);
-
-				SDL_Surface* character = IMG_Load("res/character.png");
-				SDL_BlitSurface(character, NULL, pScreen, &display_img_pos);
-				SDL_FreeSurface(character);
-				
-			}
-			// If clicked on recognize
-			else if (isClicked(event.button, process_pos, btn_height, btn_width))
-			{
+				run = 0;
 				// SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				// result_pos.w = 300;
-				// SDL_BlitSurface(result, NULL, pScreen, &result_pos);
+				
+				// SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
+				// SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
+				// SDL_FreeSurface(paragraph);
+
+				// SDL_Surface* line = IMG_Load("res/line.png");
+				// SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
+				// SDL_FreeSurface(line);
+
+				// SDL_Surface* character = IMG_Load("res/character.png");
+				// SDL_BlitSurface(character, NULL, pScreen, &display_img_pos);
+				// SDL_FreeSurface(character);
+				
 			}
 			// If clicked on DIGITALIZE
 			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & display_btn)
@@ -380,16 +360,25 @@ void init_window(char *filepath)
 
 		case (SDL_MOUSEWHEEL):
 		{
-			if (file_dropped)
+			if (display_btn)
 			{
+				SDL_BlitSurface(right_area, NULL, pScreen, &right_area_pos);
 				if (event.wheel.y > 0) // scroll up
 				{
-					//SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+					curr_y ++;
+					result_pos.y -= 30*curr_y;
+					SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 				}
 				else if (event.wheel.y < 0) // scroll down
-				{
-					// Put code for handling "scroll down" here!
+				{	
+					if(result_pos.y- 30*curr_y < 0)
+						curr_y --;
+					result_pos.y -= 30*curr_y;
+
+					SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 				}
+				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
+				SDL_BlitSurface(save_btn,NULL,pScreen, &save_btn_pos);
 			}
 			break;
 		}
@@ -413,9 +402,9 @@ void init_window(char *filepath)
 	SDL_FreeSurface(logo);
 	SDL_FreeSurface(add);
 	SDL_FreeSurface(saved);
-	SDL_FreeSurface(settings);
 	SDL_FreeSurface(quit);
-	SDL_FreeSurface(process);
+	// SDL_FreeSurface(settings);
+	// SDL_FreeSurface(process);
 	SDL_FreeSurface(digitalize_btn);
 	SDL_FreeSurface(image);
 	SDL_FreeSurface(right_area);
