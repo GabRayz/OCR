@@ -26,7 +26,7 @@ int count_saved_files()
 }
 void save_result(char *res, char *filepath)
 {
-    FILE *file = fopen("res/res.txt", "w");
+    FILE *file = fopen(filepath, "w");
     if (file == NULL)
     {
         printf("Failed to save the result\n");
@@ -242,7 +242,7 @@ void init_window(char *filepath)
 	int file_dropped = 0;
 	Img *img;
 	char *res;
-	char *nb_file = "0";
+	int nb_file;
 	while (run)
 	{
 		SDL_WaitEvent(&event);
@@ -288,9 +288,19 @@ void init_window(char *filepath)
 			else if (isClicked(event.button, quit_pos, btn_height, btn_width))
 			{
 				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
+				
+				SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
+				SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
+				SDL_FreeSurface(paragraph);
+
+				SDL_Surface* line = IMG_Load("res/line.png");
+				SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
+				SDL_FreeSurface(line);
+
 				SDL_Surface* character = IMG_Load("res/character.png");
 				SDL_BlitSurface(character, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(character);
+				
 			}
 			// If clicked on recognize
 			else if (isClicked(event.button, process_pos, btn_height, btn_width))
@@ -314,11 +324,17 @@ void init_window(char *filepath)
 			// If clicked on SAVE
 			else if (isClicked(event.button, saved_btn_pos, 184, 368) & display_btn2)
 			{
-				char *buffer[4];
-				nb_file = SDL_itoa(count_saved_files(),buffer,2);
-				// char *c = concat("res/", nb_file);
-				// printf("%s",c);
-				//save_result(res,c);
+				char buffer[5];
+				nb_file = count_saved_files()-2;
+				sprintf(buffer, "%d\n", nb_file);
+				char *c = malloc(sizeof(char) * 16);
+
+				strcpy(c, "res/save");
+				strcat(c, buffer);
+				strcat(c, ".txt");
+				//printf("%s",c);
+				
+				save_result(res,c);
 
 				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
 
