@@ -189,6 +189,7 @@ int ccl(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    gtk_init(&argc, &argv);
     // Check if the res folder exists, create it otherwise
     DIR *resfile = opendir("res");
     if (resfile == NULL)

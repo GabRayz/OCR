@@ -3,6 +3,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <dirent.h>
+#include <gtk/gtk.h>
 #include "window.h"
 #include "image.h"
 #include "neuralnetwork.h"
@@ -11,7 +12,25 @@
 
 void open_file_browser()
 {
-	//xdg-open /path	
+	GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	
+	GtkWidget *dialog = NULL;
+	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+	gint res;
+	dialog = gtk_file_chooser_dialog_new("Open file", window, action,
+        "Cancel", GTK_RESPONSE_CANCEL,
+        "Open", GTK_RESPONSE_OK,
+        NULL);
+	gtk_window_set_transient_for(dialog, window);
+	gtk_widget_show_all(window);
+	gtk_main();
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+	{
+		printf("WORKED");
+		//
+	}
+	
+	gtk_widget_destroy(dialog);
 }
 
 int count_saved_files()
@@ -46,6 +65,7 @@ char *call_nn(Img *img)
 	char* res = send_to_cerveau(img,chars,nn);
 	return res;
 }
+
 
 void init_window(char *filepath)
 {
@@ -190,13 +210,25 @@ void init_window(char *filepath)
 	SDL_Rect digitalize_btn_pos;
 	digitalize_btn_pos.x = 100;
 	digitalize_btn_pos.y = 650;
-	int display_btn = 0;
+
+	//Return button
+	SDL_Surface *return_btn;
+	return_btn = IMG_Load("Img/Return3.png");
+	SDL_Rect return_btn_pos;
+	return_btn_pos.x = 0;
+	return_btn_pos.y = 661;
+
+	//Quit button
+	SDL_Surface *quit_btn;
+	quit_btn = IMG_Load("Img/Quit3.png");
+	SDL_Rect quit_btn_pos;
+	quit_btn_pos.x = 400;
+	quit_btn_pos.y = 661;
 
 	//Save buton
 	SDL_Rect saved_btn_pos;
 	saved_btn_pos.x = 720;
 	saved_btn_pos.y = 650;
-	int display_btn2 = 0;
 
 	//Load neural network & run 
 	SDL_Surface *image;
@@ -245,6 +277,7 @@ void init_window(char *filepath)
 	char *res;
 	int nb_file;
 	int curr_y = 1;
+	int state = 0;
 	while (run)
 	{
 		SDL_WaitEvent(&event);
@@ -265,44 +298,31 @@ void init_window(char *filepath)
 
 		case SDL_MOUSEBUTTONUP:
 			// If clicked on ADD FILE
-			if (isClicked(event.button, add_pos, btn_height, btn_width)& !display_btn)
+			if (isClicked(event.button, add_pos, btn_height, btn_width)& state == 0)
 			{
 				// xdg-open /
 				open_file_browser();
 			}
-			// If clicked on characters
-			else if (isClicked(event.button, quit_pos, btn_height, btn_width) & !display_btn)
+			// If clicked on QUIT
+			else if ((isClicked(event.button, quit_pos, btn_height, btn_width) & state == 0)
+					|| (isClicked(event.button, quit_btn_pos, 100, 100) & state == 1))
 			{
 				run = 0;
-				// SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
-				
-				// SDL_Surface* paragraph = IMG_Load("res/paragraph.png");
-				// SDL_BlitSurface(paragraph, NULL, pScreen, &display_img_pos);
-				// SDL_FreeSurface(paragraph);
-
-				// SDL_Surface* line = IMG_Load("res/line.png");
-				// SDL_BlitSurface(line, NULL, pScreen, &display_img_pos);
-				// SDL_FreeSurface(line);
-
-				// SDL_Surface* character = IMG_Load("res/character.png");
-				// SDL_BlitSurface(character, NULL, pScreen, &display_img_pos);
-				// SDL_FreeSurface(character);
-				
 			}
 			// If clicked on DIGITALIZE
-			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & display_btn)
+			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & state == 1)
 			{
 				res = call_nn(img);
 				SDL_BlitSurface(right_area, NULL, pScreen, &right_area_pos);
 				result = TTF_RenderText_Blended_Wrapped(font, res, black,left-margin*2);
 				SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 
-				display_btn2 = 1;
+				state = 2;
 				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
 				SDL_BlitSurface(save_btn,NULL,pScreen, &save_btn_pos);
 			}
 			// If clicked on SAVE
-			else if (isClicked(event.button, saved_btn_pos, 184, 368) & display_btn2)
+			else if (isClicked(event.button, saved_btn_pos, 184, 368) & state == 2)
 			{
 				char buffer[5];
 				nb_file = count_saved_files()-2;
@@ -312,14 +332,26 @@ void init_window(char *filepath)
 				strcpy(c, "res/save");
 				strcat(c, buffer);
 				strcat(c, ".txt");
-				//printf("%s",c);
 				
 				save_result(res,c);
 
 				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
 
 				SDL_BlitSurface(save_at_btn,NULL,pScreen, &save_at_btn_pos);
-				display_btn2 = 0;
+				state = 1;
+			}
+			// If clicked on RETURN
+			else if (isClicked(event.button, return_btn_pos, 100,100) & (state == 1|| state == 2))
+			{
+				state = 0;
+				SDL_BlitSurface(gradient, NULL, pScreen, &gradient_pos);
+				SDL_BlitSurface(dragdrop, NULL, pScreen, &dragdrop_pos);
+				SDL_BlitSurface(group_name, NULL, pScreen, &group_name_pos);
+				SDL_BlitSurface(logo, NULL, pScreen, &logo_pos);
+				SDL_BlitSurface(add, NULL, pScreen, &add_pos);
+				SDL_BlitSurface(saved, NULL, pScreen, &saved_pos);
+				SDL_BlitSurface(quit, NULL, pScreen, &quit_pos);
+
 			}
 			break;
 		case (SDL_DROPFILE):
@@ -343,10 +375,12 @@ void init_window(char *filepath)
 				SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
 				SDL_FreeSurface(image);
 
-				//Blit process_btn
-				display_btn = 1;
+				//Blit new menu
+				state = 1;
 				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &digitalize_btn_pos);
 				SDL_BlitSurface(digitalize,NULL,pScreen, &digitalize_pos);
+				SDL_BlitSurface(return_btn,NULL,pScreen,&return_btn_pos);
+				SDL_BlitSurface(quit_btn,NULL,pScreen,&quit_btn_pos);
 
 				//Refresh the screen
 				SDL_UpdateWindowSurface(screen);
@@ -360,7 +394,7 @@ void init_window(char *filepath)
 
 		case (SDL_MOUSEWHEEL):
 		{
-			if (display_btn)
+			if (state == 1)
 			{
 				SDL_BlitSurface(right_area, NULL, pScreen, &right_area_pos);
 				if (event.wheel.y > 0) // scroll up
@@ -385,7 +419,7 @@ void init_window(char *filepath)
 
 		case (SDL_MOUSEMOTION):
 		{
-			if(isOver(event.motion, digitalize_btn_pos, 184, 368) & display_btn)
+			if(isOver(event.motion, digitalize_btn_pos, 184, 368) & state == 1)
 			{
 				//change cursor to the clickable one
 			}
