@@ -120,10 +120,11 @@ void merge_labels(Block *block, LinkedList *labels, int *hist)
     {
         // merge_two(block, labels, current->previous, current, hist, currentLabel);
 
-        merge_two(block, labels, current->next, current, hist, currentLabel);
-
+        if (merge_two(block, labels, current->next, current, hist, currentLabel))
+            currentLabel += 2;
+        else
+            currentLabel++;
         current = current->next;
-        currentLabel++;
     }
 }
 
@@ -134,10 +135,10 @@ void merge_labels(Block *block, LinkedList *labels, int *hist)
  * @param src: The next character block, which will be deleted.
  * @param dst: The current character block, which will contain the next one too.
  */
-void merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *hist, int currentLabel)
+int merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *hist, int currentLabel)
 {
     if (src == NULL)
-        return;
+        return 0;
 
     Block *srcB = src->data;
     Block *dstB = dst->data;
@@ -147,7 +148,7 @@ void merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *
     // End of src <= end of dst
     // Otherwise, return
     if (srcB->x < dstB->x || dstB->x + dstB->width < srcB->x + srcB->width)
-        return;
+        return 0;
 
     // Merge blocks
     for (int y = srcB->y; y < srcB->y + srcB->height; y++)
@@ -175,6 +176,8 @@ void merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *
         dstB->height = srcB->y + srcB->height - dstB->y;
     }
     list_remove(labels, src);
+
+    return 1;
 }
 
 void print_ccl(Img *source, LinkedList *labels)
