@@ -52,7 +52,7 @@ LinkedList *ccl_segmentation(Img *source, bool whitespaces)
 }
 
 /**
- * Segment a line
+ * Segment a line.
  */
 LinkedList *ccl_segment_block(Img *source, Block *block)
 {
@@ -109,13 +109,16 @@ LinkedList *hist_to_images(Block *block, LinkedList *labels, int *hist)
     return res;
 }
 
+/**
+ * Merge two blocks if one is contained in the other.
+ */
 void merge_labels(Block *block, LinkedList *labels, int *hist)
 {
     Node *current = labels->start;
     int currentLabel = 1;
     while (current)
     {
-        merge_two(block, labels, current->previous, current, hist, currentLabel);
+        // merge_two(block, labels, current->previous, current, hist, currentLabel);
 
         merge_two(block, labels, current->next, current, hist, currentLabel);
 
@@ -124,6 +127,13 @@ void merge_labels(Block *block, LinkedList *labels, int *hist)
     }
 }
 
+/**
+ * Merge the current labeled block with the next one if the second is contained in the first.
+ * @param lineBlock: Block of the entire line.
+ * @param labels: LinkedList of characters.
+ * @param src: The next character block, which will be deleted.
+ * @param dst: The current character block, which will contain the next one too.
+ */
 void merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *hist, int currentLabel)
 {
     if (src == NULL)
@@ -133,21 +143,26 @@ void merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *
     Block *dstB = dst->data;
 
     // We process only if srcB is contained in dstB
-    if (srcB->x < dstB->x || dstB->x + dstB->width > srcB->x + srcB->width)
+    // Begining of src (next) >= begining of dest (current)
+    // End of src <= end of dst
+    // Otherwise, return
+    if (srcB->x < dstB->x || dstB->x + dstB->width < srcB->x + srcB->width)
         return;
 
-    // Merge
-    for (int y = 0; y < srcB->height; y++)
+    // Merge blocks
+    for (int y = srcB->y; y < srcB->y + srcB->height; y++)
     {
-        for (int x = 0; x < srcB->width; x++)
+        for (int x = srcB->x; x < srcB->x + srcB->width; x++)
         {
-            if (hist[y * lineBlock->width + x] == currentLabel - 1)
+            // For each pixel of the source block, replace the label
+            if (hist[y * lineBlock->width + x] == currentLabel + 1)
             {
                 hist[y * lineBlock->width + x] = currentLabel;
             }
         }
     }
 
+    // Update coordinates
     if (srcB->y < dstB->y)
     {
         dstB->height += dstB->y - srcB->y;
