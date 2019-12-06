@@ -101,7 +101,6 @@ Img *img_import(char *filepath)
     // img_apply_filter(res, filter, 16);
 
     // Turn the image in B&W
-    img_save(res, "res/img.png");
     img_bw(res->pixels, width * height);
 
     return res;
@@ -197,9 +196,6 @@ float img_otsu_w(double *hist, int i, int k)
 void img_bw(double *grayscale, int size)
 {
     int otsu = img_otsu(grayscale, size);
-    printf("Otsu: %d\n", otsu);
-    // return;
-    // Convert into black & white
     for (int i = 0; i < size; i++)
     {
         grayscale[i] = (grayscale[i] < otsu) ? 0 : 1;
@@ -261,6 +257,4 @@ Img *img_resize(Img *source, Block *block, int width, int height)
     Img *resized = img_init(width, height);
     MagickExportImagePixels(wand, 0, 0, width, height, "I", DoublePixel, resized->pixels);
     return resized;
-
-    //return res;
 }
