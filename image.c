@@ -1,6 +1,7 @@
 #include "image.h"
 #include "segmentation.h"
 #include <ImageMagick-7/MagickWand/MagickWand.h>
+#include "matrix.h"
 
 Img *img_init(int width, int height)
 {
@@ -25,6 +26,50 @@ void img_delete(Img *image)
     free(image);
 }
 
+/**
+ * Apply a filter to the image.
+ * @param source: Source image to apply the filter to
+ * @param filter: Matrix representation of the filter.
+ * Modifies the image in place
+ */
+void img_apply_filter(Img *source, double *filter, int divisor)
+{
+    double *new = calloc(source->width * source->height, sizeof(double));
+    for (int y = 0; y < source->height; y++)
+    {
+        for (int x = 0; x < source->width; x++)
+        {
+            new[y * source->width + x] = source->pixels[y * source->width + x];
+        }
+    }
+    
+
+    for (int y = 1; y < source->height - 1; y++)
+    {
+        for (int x = 1; x < source->width - 1; x++)
+        {
+            // For each pixel, go through neighbors
+            int k = 0;
+            double res = 0;
+            for (int j = y - 1; j < y + 2; j++)
+            {
+                for (int i = x - 1; i < x + 2; i++)
+                {
+                    // Compute the filter result
+                    // printf("%lf\n", source->pixels[(y + j) * source->width + (x + i)]);
+                    res += source->pixels[j * source->width + i] * filter[k];
+                    k++;
+                }
+            }
+            // Apply
+            // printf("%lf\n", res / 16);
+            new[y * source->width + x] = res / divisor;
+        }
+    }
+    free(source->pixels);
+    source->pixels = new;
+}
+
 Img *img_import(char *filepath)
 {
     /* Take the path of the image file. Returns the pixel array in black & white */
@@ -45,14 +90,19 @@ Img *img_import(char *filepath)
     MagickExportImagePixels(wand, 0, 0, width, height, "RGB", DoublePixel, pixels);
     // Convert into grayscale
     double *image = img_grayscale(pixels, width * height * 3);
+    // Apply filter
     free(pixels);
 
     Img *res = img_init(width, height);
     res->pixels = image;
     res->filepath = filepath;
-    img_bw(res->pixels, width * height, 0.3);
+    // Create filter matrix
+    double filter[9] = {0, 1, 0, 1, 4, 1, 0, 1, 0};
+    img_apply_filter(res, filter, 8);
 
-    //
+    // Turn the image in B&W
+    img_save(res, "res/img.png");
+    img_bw(res->pixels, width * height);
 
     return res;
 }
@@ -144,7 +194,7 @@ float img_otsu_w(double *hist, int i, int k)
     return res;
 }
 
-void img_bw(double *grayscale, int size, float threshold)
+void img_bw(double *grayscale, int size)
 {
     int otsu = img_otsu(grayscale, size);
     printf("Otsu: %d\n", otsu);
