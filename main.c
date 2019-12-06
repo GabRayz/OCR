@@ -189,7 +189,7 @@ int ccl(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    gtk_init(&argc, &argv);
+    //gtk_init(&argc, &argv);
     // Check if the res folder exists, create it otherwise
     DIR *resfile = opendir("res");
     if (resfile == NULL)
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
         closedir(resfile);
 
     if (argc == 1)
-        printf("Usage: ./ocr write_dataset|learn|read\n");
+        init_window();
     else if (strcmp(argv[1], "write_dataset") == 0)
         write_dataset(argc, argv);
     else if (strcmp(argv[1], "learn") == 0)
@@ -208,6 +208,7 @@ int main(int argc, char **argv)
     else if (strcmp(argv[1], "ccl") == 0)
         ccl(argc, argv);
     else if (argc == 2)
-        init_window(argv[1]);
+        printf("Usage: ./ocr write_dataset|learn|read\n"); 
+    
     return 0;
 }
