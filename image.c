@@ -63,7 +63,7 @@ void img_apply_filter(Img *source, double *filter, int divisor)
             }
             // Apply
             // printf("%lf\n", res / 16);
-            new[y * source->width + x] = res / divisor;
+            new[y * source->width + x] = res / (double)divisor;
         }
     }
     free(source->pixels);
@@ -97,8 +97,8 @@ Img *img_import(char *filepath)
     res->pixels = image;
     res->filepath = filepath;
     // Create filter matrix
-    double filter[9] = {0, 1, 0, 1, 4, 1, 0, 1, 0};
-    img_apply_filter(res, filter, 8);
+    // double filter[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+    // img_apply_filter(res, filter, 16);
 
     // Turn the image in B&W
     img_save(res, "res/img.png");
