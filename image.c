@@ -45,11 +45,14 @@ Img *img_import(char *filepath)
     MagickExportImagePixels(wand, 0, 0, width, height, "RGB", DoublePixel, pixels);
     // Convert into grayscale
     double *image = img_grayscale(pixels, width * height * 3);
+    free(pixels);
 
-    //
     Img *res = img_init(width, height);
     res->pixels = image;
     res->filepath = filepath;
+    img_bw(res->pixels, width * height, 0.3);
+
+    //
 
     return res;
 }
@@ -86,15 +89,71 @@ double *img_grayscale(double *pixels, int size)
     {
         // Grayscale formula
         grayscale[i] = (0.3 * pixels[i * 3]) + (0.59 * pixels[i * 3 + 1]) + (0.11 * pixels[i * 3 + 2]);
+        grayscale[i] *= 255;
     }
 
-    // Convert into black & white
-    float threshold = 0.3;
-    for (int i = 0; i < size / 3; i++)
-    {
-        grayscale[i] = (grayscale[i] < threshold) ? 0 : 1;
-    }
     return grayscale;
+}
+
+int img_otsu(double *grayscale, int size)
+{
+    // Create the histogram
+    double *hist = calloc(256, sizeof(double));
+    for (int i = 1; i < size; i++)
+    {
+        hist[(int)grayscale[i]] += 1 / (float)size;
+    }
+
+    // Search for max
+    float max = 0;
+    int threshold = 0;
+    for (int k = 1; k < 255; k++)
+    {
+        float w0 = img_otsu_w(hist, 0, k);
+        float w1 = img_otsu_w(hist, k, 255);
+        float tmp = img_otsu_mu(hist, 0, k) - img_otsu_mu(hist, k, 255);
+        float s = w0 * w1 * tmp * tmp;
+        if (s > max)
+        {
+            max = s;
+            threshold = k;
+        }
+    }
+    free(hist);
+
+    return threshold;
+}
+
+float img_otsu_mu(double *hist, int i, int k)
+{
+    float res = 0;
+    for (int j = i; j < k; j++)
+    {
+        res += i * hist[j];
+    }
+    return res / img_otsu_w(hist, i, k);
+}
+
+float img_otsu_w(double *hist, int i, int k)
+{
+    float res = 0;
+    for (; i < k; i++)
+    {
+        res += hist[i];
+    }
+    return res;
+}
+
+void img_bw(double *grayscale, int size, float threshold)
+{
+    int otsu = img_otsu(grayscale, size);
+    printf("Otsu: %d\n", otsu);
+    // return;
+    // Convert into black & white
+    for (int i = 0; i < size; i++)
+    {
+        grayscale[i] = (grayscale[i] < otsu) ? 0 : 1;
+    }
 }
 
 void img_save(Img *img, char *filepath)
