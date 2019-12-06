@@ -82,6 +82,16 @@ LinkedList *hist_to_images(Block *block, LinkedList *labels, int *hist)
     while (charBlock)
     {
         Block *b = charBlock->data;
+        // Skip if whitespace
+        if (b->label != '\0')
+        {
+            Img *space = img_init(0, 0);
+            space->label = b->label;
+            list_insert(res, node_init(space));
+            charBlock = charBlock->next;
+            continue;
+        }
+
         Img *image = img_init(b->width, b->height);
         bool found = false;
         for (int y = 0; y < b->height; y++)
@@ -118,12 +128,35 @@ void merge_labels(Block *block, LinkedList *labels, int *hist)
     int currentLabel = 1;
     while (current)
     {
-        // merge_two(block, labels, current->previous, current, hist, currentLabel);
-
         if (merge_two(block, labels, current->next, current, hist, currentLabel))
             currentLabel += 2;
         else
             currentLabel++;
+
+
+        // Compare coordinates with the previous letter to insert a whitespace if needed.
+        Block *cBlock = current->data;
+        if (current->previous != NULL)
+        {
+            Block *pBlock = current->previous->data;
+            if (pBlock != NULL && cBlock->x > pBlock->x + pBlock->width + block->height / 3)
+            {
+                // Create the whitespace block
+                Block *space = block_init();
+                space->x = pBlock->x + pBlock->width;
+                space->width = cBlock->x - space->x;
+                space->y = block->y;
+                space->height = block->height;
+                space->label = ' ';
+
+                // Insert
+                Node *new = node_init(space);
+                new->previous = current->previous;
+                new->previous->next = new;
+                new->next = current;
+                current->previous = new;
+            }
+        }
         current = current->next;
     }
 }

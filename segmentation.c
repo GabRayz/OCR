@@ -69,6 +69,7 @@ void block_delete(Block *block)
 Block *img_make_block(Img *image)
 {
     Block *block = block_init();
+    block->label = image->label;
     block->x = 0;
     block->y = 0;
     block->width = image->width;

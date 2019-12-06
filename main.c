@@ -81,12 +81,10 @@ char *send_images_to_cerveau(LinkedList *images, NeuralNetwork *nn)
     while (node)
     {
         Block *block = img_make_block(node->data);
-
         if (block->label == '\0')
         {
             remove_white_margin(node->data, block);
             Img *resized = img_resize(node->data, block, 28, 28);
-
             // Send to the neural network
             nn_compute(nn, resized->pixels);
             res[i] = nn_getResult(nn);
