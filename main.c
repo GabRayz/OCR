@@ -13,6 +13,7 @@
 #include "dataset.h"
 #include <sys/stat.h>
 #include "ccl.h"
+#include "spellchek.h"
 
 NeuralNetwork *create_nn(char *filepath, int cycles, int count)
 {
@@ -163,6 +164,8 @@ int read_image(int argc, char **argv)
 
     NeuralNetwork *nn = nn_load(argv[2]);
     char *res = send_to_cerveau(source, chars, nn);
+
+    res = spellcheck(res);
 
     printf("Result: \n\n%s\n", res);
     save_res(res, "res/res.txt");

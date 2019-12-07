@@ -2,13 +2,13 @@ CC = gcc
 
 NAME = ocr
 
-SRCS = main.c matrix.c neuralnetwork.c image.c segmentation.c linkedlist.c window.c dataset.c ccl.c
+SRCS = main.c matrix.c neuralnetwork.c image.c segmentation.c linkedlist.c window.c dataset.c ccl.c spellcheck.c
 
 OBJS = $(SRCS:.c=.o)
 
 CFLAGS = -Wall -Wextra -std=c99 `pkg-config  --cflags MagickWand ` -O3
 
-CLIBS = -lSDL2_image -lSDL2_ttf `sdl2-config --cflags` `sdl2-config --libs` `pkg-config --libs MagickWand ` 
+CLIBS = -lhunspell-1.7 -lSDL2_image -lSDL2_ttf `sdl2-config --cflags` `sdl2-config --libs` `pkg-config --libs MagickWand ` 
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CLIBS) -lm

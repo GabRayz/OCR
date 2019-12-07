@@ -7,6 +7,7 @@
 #include "image.h"
 #include "neuralnetwork.h"
 #include "main.h"
+#include "spellchek.h"
 
 
 int count_saved_files()
@@ -39,6 +40,7 @@ char *call_nn(Img *img)
 	LinkedList *chars = segmentation(img, true);
 	NeuralNetwork *nn = nn_load("save/all");
 	char* res = send_to_cerveau(img,chars,nn);
+	res = spellcheck(res);
 	return res;
 }
 
@@ -119,57 +121,17 @@ void init_window()
 	logo_pos.y = 150;
 	SDL_BlitSurface(logo, NULL, pScreen, &logo_pos);
 
-	
-
 	//Create font
 	TTF_Font *font;
 	font = TTF_OpenFont("./Font/Raleway-Regular.ttf", 24);
 	SDL_Color font_color = {255, 255, 255, 0};
 	SDL_Color black = {0, 0, 0, 0};
 
-	//Set buttons height and width
-	// int btn_height = 30;
-	// int btn_width = 300; //160;
-
 	//Create Text area
 	// int menu_x = 130; //200;
 	int menu_y = 400;
 	int menu_step = 60;
 
-	// SDL_Surface *add;
-	// add = TTF_RenderUTF8_Blended(font, "ADD FILES", font_color);
-	// SDL_Rect add_pos;
-	// add_pos.x = menu_x;
-	// add_pos.y = menu_y;
-	// SDL_BlitSurface(add, NULL, pScreen, &add_pos);
-
-	// SDL_Surface *saved;
-	// saved = TTF_RenderUTF8_Blended(font, "SAVED FILES", font_color);
-	// SDL_Rect saved_pos;
-	// saved_pos.x = menu_x;
-	// saved_pos.y = menu_y + menu_step;
-	// SDL_BlitSurface(saved, NULL, pScreen, &saved_pos);
-
-	// SDL_Surface *settings;
-	// settings = TTF_RenderUTF8_Blended(font, "SETTINGS", font_color);
-	// SDL_Rect settings_pos;
-	// settings_pos.x = menu_x;
-	// settings_pos.y = menu_y + menu_step * 2;
-	// SDL_BlitSurface(settings, NULL, pScreen, &settings_pos);
-
-	// SDL_Surface *quit;
-	// quit = TTF_RenderUTF8_Blended(font, "QUIT", font_color);
-	// SDL_Rect quit_pos;
-	// quit_pos.x = menu_x;
-	// quit_pos.y = menu_y + menu_step * 4;
-	// SDL_BlitSurface(quit, NULL, pScreen, &quit_pos);
-
-	// SDL_Surface *process;
-	// process = TTF_RenderUTF8_Blended(font, "RECOGNITION", font_color);
-	// SDL_Rect process_pos;
-	// process_pos.x = menu_x;
-	// process_pos.y = menu_y + menu_step * 4;
-	// SDL_BlitSurface(process, NULL, pScreen, &process_pos);
 
 	SDL_Surface *digitalize;
 	digitalize = TTF_RenderUTF8_Blended(font, "DIGITALIZE!", font_color);
@@ -189,7 +151,6 @@ void init_window()
 	save_at_btn_pos.x = 820;
 	save_at_btn_pos.y = 710;
 
-
 	//Process button
 	SDL_Surface *digitalize_btn;
 	digitalize_btn = IMG_Load("Img/Btn.png");
@@ -203,8 +164,6 @@ void init_window()
 	SDL_Rect return_btn_pos;
 	return_btn_pos.x = 0;
 	return_btn_pos.y = 661;
-
-	
 	
 	//Quit button
 	SDL_Surface *quit_btn;
@@ -225,15 +184,8 @@ void init_window()
 
 	//Load neural network & run 
 	SDL_Surface *image = NULL;
-	//image = IMG_Load(filepath);
-	// Img *img = img_import(filepath);
-    // img_save(img, "res/bw.png");
-    // LinkedList *chars = segmentation(img, true);
-	// NeuralNetwork *nn = nn_load("save/all");
-	// char* res = send_to_cerveau(img,chars,nn);
 	
 	SDL_Surface *result;
-	// result = TTF_RenderText_Blended_Wrapped(font, res, black,left-margin*2);
 	SDL_Rect result_pos;
 	result_pos.x = dragdrop_pos.x+margin;
 	result_pos.y = dragdrop_pos.y+margin;
@@ -245,12 +197,6 @@ void init_window()
 	display_img_pos.w = right;
 	display_img_pos.h = height;
 	display_img_pos.y = 100;
-	// display_img_pos.h = left * h / w;
-	// display_img_pos.y = (height / 2) - (h / 4);
-	// if(image != NULL)
-	// {
-	// 	SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
-	// }
 	
 	//Refresh the screen
 	SDL_UpdateWindowSurface(screen);
@@ -407,15 +353,9 @@ void init_window()
 	SDL_FreeSurface(dragdrop);
 	SDL_FreeSurface(group_name);
 	SDL_FreeSurface(logo);
-	// SDL_FreeSurface(add);
-	// SDL_FreeSurface(saved);
-	//SDL_FreeSurface(quit);
-	// SDL_FreeSurface(settings);
-	// SDL_FreeSurface(process);
 	SDL_FreeSurface(digitalize_btn);
 	SDL_FreeSurface(image);
 	SDL_FreeSurface(right_area);
-	//SDL_FreeSurface(result);
 
 	TTF_CloseFont(font);
 	TTF_Quit();
