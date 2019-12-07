@@ -133,7 +133,6 @@ void merge_labels(Block *block, LinkedList *labels, int *hist)
         else
             currentLabel++;
 
-
         // Compare coordinates with the previous letter to insert a whitespace if needed.
         Block *cBlock = current->data;
         if (current->previous != NULL)
@@ -180,7 +179,7 @@ int merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *h
     // Begining of src (next) >= begining of dest (current)
     // End of src <= end of dst
     // Otherwise, return
-    if (srcB->x < dstB->x || dstB->x + dstB->width < srcB->x + srcB->width)
+    if (srcB->x < dstB->x || dstB->x + dstB->width + 3 < srcB->x + srcB->width)
         return 0;
 
     // Merge blocks
@@ -202,7 +201,10 @@ int merge_two(Block *lineBlock, LinkedList *labels, Node *src, Node *dst, int *h
         dstB->height += dstB->y - srcB->y;
         dstB->y = srcB->y;
     }
-
+    if (srcB->x + srcB->width > dstB->x + dstB->width)
+    {
+        dstB->width = srcB->width + srcB->x - dstB->x;
+    }
     if (srcB->y + srcB->height > dstB->y + dstB->height)
     {
         // dstB->height += srcB->y + srcB->height - (dstB->y + dstB->height);
