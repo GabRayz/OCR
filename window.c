@@ -3,17 +3,11 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <dirent.h>
-#include <gtk/gtk.h>
 #include "window.h"
 #include "image.h"
 #include "neuralnetwork.h"
 #include "main.h"
 
-
-void open_file_browser()
-{
-	
-}
 
 int count_saved_files()
 {
@@ -48,10 +42,18 @@ char *call_nn(Img *img)
 	return res;
 }
 
+int isClicked(SDL_MouseButtonEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
+{
+	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
+}
+
+int isOver(SDL_MouseMotionEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
+{
+	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
+}
 
 void init_window()
 {
-
 	//Create Window
 	SDL_Window *screen = NULL;
 
@@ -117,9 +119,7 @@ void init_window()
 	logo_pos.y = 150;
 	SDL_BlitSurface(logo, NULL, pScreen, &logo_pos);
 
-	//Set buttons height and width
-	int btn_height = 30;
-	int btn_width = 300; //160;
+	
 
 	//Create font
 	TTF_Font *font;
@@ -127,8 +127,12 @@ void init_window()
 	SDL_Color font_color = {255, 255, 255, 0};
 	SDL_Color black = {0, 0, 0, 0};
 
+	//Set buttons height and width
+	// int btn_height = 30;
+	// int btn_width = 300; //160;
+
 	//Create Text area
-	int menu_x = 130; //200;
+	// int menu_x = 130; //200;
 	int menu_y = 400;
 	int menu_step = 60;
 
@@ -220,7 +224,7 @@ void init_window()
 	saved_btn_pos.y = 650;
 
 	//Load neural network & run 
-	SDL_Surface *image;
+	SDL_Surface *image = NULL;
 	//image = IMG_Load(filepath);
 	// Img *img = img_import(filepath);
     // img_save(img, "res/bw.png");
@@ -251,9 +255,6 @@ void init_window()
 	//Refresh the screen
 	SDL_UpdateWindowSurface(screen);
 
-	//Cursor
-	SDL_Cursor *cursor = SDL_GetCursor();
-
 	//Event Loop
 	int run = 1;
 	SDL_Event event;
@@ -261,8 +262,7 @@ void init_window()
 	//Enable drop file
 	char *dropped_filedir;
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-	int file_dropped = 0;
-	Img *img;
+	Img *img = NULL;
 	char *res;
 	int nb_file;
 	int curr_y = 1;
@@ -287,8 +287,8 @@ void init_window()
 
 		case SDL_MOUSEBUTTONUP:
 			// If clicked on QUIT
-			if ((isClicked(event.button, quit_pos, 140, 140) & state == 0)
-					|| (isClicked(event.button, quit_btn_pos, 140, 140) & state == 1))
+			if ((isClicked(event.button, quit_pos, 140, 140) & (state == 0))
+					|| (isClicked(event.button, quit_btn_pos, 140, 140) & (state == 1)))
 			{
 				run = 0;
 			}
@@ -304,7 +304,7 @@ void init_window()
 
 			}
 			// If clicked on DIGITALIZE
-			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & state == 1)
+			else if (isClicked(event.button, digitalize_btn_pos, 184, 368) & (state == 1))
 			{
 				res = call_nn(img);
 				if(res != NULL)
@@ -319,11 +319,11 @@ void init_window()
 				}
 			}
 			// If clicked on SAVE
-			else if (isClicked(event.button, saved_btn_pos, 184, 368) & state == 2)
+			else if (isClicked(event.button, saved_btn_pos, 184, 368) & (state == 2))
 			{
-				char buffer[5];
+				char buffer[11];
 				nb_file = count_saved_files()-2;
-				sprintf(buffer, "%d\n", nb_file);
+				sprintf(buffer, "%d", nb_file);
 				char *c = malloc(sizeof(char) * 16);
 
 				strcpy(c, "res/save");
@@ -367,7 +367,6 @@ void init_window()
 
 				//Refresh the screen
 				SDL_UpdateWindowSurface(screen);
-				file_dropped = 1;
 			}
 
 			// Free dropped_filedir memory
@@ -399,17 +398,6 @@ void init_window()
 			}
 			break;
 		}
-
-		case (SDL_MOUSEMOTION):
-		{
-			if(isOver(event.motion, digitalize_btn_pos, 184, 368) & state == 1)
-			{
-				//change cursor to the clickable one
-			}
-			break;
-		}
-
-		
 		}
 		//Refresh the screen
 		SDL_UpdateWindowSurface(screen);
@@ -434,12 +422,3 @@ void init_window()
 	SDL_Quit();
 }
 
-int isClicked(SDL_MouseButtonEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
-{
-	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
-}
-
-int isOver(SDL_MouseMotionEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
-{
-	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
-}
