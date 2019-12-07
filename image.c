@@ -103,7 +103,7 @@ Img *img_import(char *filepath)
 
     // Turn the image in B&W
     img_bw(res->pixels, width * height);
-
+    img_save(res, "res/otsu.png");
     return res;
 }
 
@@ -179,7 +179,7 @@ float img_otsu_mu(double *hist, int i, int k)
     float res = 0;
     for (int j = i; j < k; j++)
     {
-        res += i * hist[j];
+        res += j * hist[j];
     }
     return res / img_otsu_w(hist, i, k);
 }
@@ -197,9 +197,11 @@ float img_otsu_w(double *hist, int i, int k)
 void img_bw(double *grayscale, int size)
 {
     int otsu = img_otsu(grayscale, size);
+    printf("otsu: %d\n", otsu);
+    int threshold = (otsu > 250) ? 76: otsu;
     for (int i = 0; i < size; i++)
     {
-        grayscale[i] = (grayscale[i] < otsu) ? 0 : 1;
+        grayscale[i] = (grayscale[i] < threshold) ? 0 : 1;
     }
 }
 

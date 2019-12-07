@@ -135,8 +135,8 @@ int learn(int argc, char **argv)
 {
     if (argc == 5 || argc == 6)
     {
-        int cycles = atoi(argv[3]);
         int count = atoi(argv[4]);
+        int cycles = atoi(argv[3]) / count;
         NeuralNetwork *nn = create_nn(argv[2], cycles, count);
         if (argc == 6)
         {
