@@ -262,8 +262,13 @@ void nn_backProp(NeuralNetwork *nn, char label, int apply, int count)
         {
             Matrix *oldBiaises = nn->biaises[l];
             Matrix *oldWeights = nn->weights[l];
-            nn->biaises[l] = m_sub(nn->biaises[l], nn->dBiaises[l]);
-            nn->weights[l] = m_sub(nn->weights[l], nn->dWeights[l]);
+            // Apply learning rate
+            Matrix *biaisDelta = m_mult_num(nn->dBiaises[l], 0.25);
+            Matrix *weightsDelta = m_mult_num(nn->dWeights[l], 0.25);
+            nn->biaises[l] = m_sub(nn->biaises[l], biaisDelta);
+            nn->weights[l] = m_sub(nn->weights[l], weightsDelta);
+            m_delete(biaisDelta);
+            m_delete(weightsDelta);
             m_delete(oldBiaises);
             m_delete(oldWeights);
             m_delete(nn->dBiaises[l]);
