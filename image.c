@@ -11,6 +11,7 @@ Img *img_init(int width, int height)
     img->pixels = malloc(sizeof(double) * width * height);
     img->width = width;
     img->height = height;
+    img->label = '\0';
 
     for (int x = 0; x < width * height; x++)
     {
