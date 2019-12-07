@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ImageMagick-7/MagickWand/MagickWand.h>
 #include <sys/stat.h>
+#include "ccl.h"
 
 /**
  * Concatenate two strings
@@ -81,7 +82,40 @@ Img **images_from_list(Img *source, LinkedList *chars, int *count)
 }
 
 /**
- * DEPRECATED. Open the training images of lines and create training images of chars.
+ * Create an array of resized images from a list of images. The final size is 28*28.
+ * @param source: A pointer to the source image.
+ * @param chars: A pointer to the linked list of images to resize.
+ * @param count: The number of blocks.
+ * 
+ */
+Img **images_from_list_of_img(LinkedList *chars, int *count)
+{
+    int length = list_length(chars);
+    Img **images = malloc(sizeof(Img) * length);
+    Node *n = chars->start;
+
+    int i = 0;
+    for (i = 0; i < length && string[i] != '\0'; i++)
+    {
+        Block *block = img_make_block(n->data);
+        // If the node is a whitespace, skip it
+        if (block->label != '\0')
+        {
+            n = n->next;
+            i--;
+            continue;
+        }
+        Img *c = img_resize(n->data, block, 28, 28);
+        images[i] = c;
+        images[i]->label = string[i];
+        n = n->next;
+    }
+    *count = i;
+    return images;
+}
+
+/**
+ * Open the training images of lines and create training images of chars.
  * @param source: The path to the image to split.
  * @param destination: The path where to save the dataset.
 */
@@ -120,10 +154,12 @@ void create_dataset_from_img(char *source, char *destination)
         sprintf(filepath, "%s/%s", source, file->d_name);
         Img *img = img_import(filepath);
         // Split into characters
-        LinkedList *chars = segmentation(img, false);
+        // LinkedList *chars = segmentation(img, false);
+        LinkedList *chars = ccl_segmentation(img, false);
         // Create images
         int count = 0;
-        Img **images = images_from_list(img, chars, &count);
+        Img **images = images_from_list_of_img(chars, &count);
+        // Img **images = images_from_list(img, chars, &count);
 
         // Save images
         for (int k = 0; k < count; k++)
