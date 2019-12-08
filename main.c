@@ -13,7 +13,7 @@
 #include "dataset.h"
 #include <sys/stat.h>
 #include "ccl.h"
-#include "spellchek.h"
+#include "spellcheck.h"
 #include "hough.h"
 
 NeuralNetwork *create_nn(char *filepath, int cycles, int count)

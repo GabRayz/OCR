@@ -7,7 +7,7 @@
 #include "image.h"
 #include "neuralnetwork.h"
 #include "main.h"
-#include "spellchek.h"
+#include "spellcheck.h"
 #include "hough.h"
 #include "ccl.h"
 
