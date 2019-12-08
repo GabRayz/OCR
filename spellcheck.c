@@ -19,12 +19,13 @@ char *pickWord(char ***s)
 {
     if (*s != NULL)
     {
-        size_t length = sizeof(s) / sizeof(s[0]);
-        for (size_t i = 0; i < length; i++)
-        {
-            if (!hasWhiteSpace(s[i][0]))
-                return s[i][0];
-        }
+	int i = 0;
+	while (s[i] != NULL)
+	{
+		if (!hasWhiteSpace(s[i][0]))
+			return s[i][0];
+		i++;
+	}
     }
 
     return NULL;
