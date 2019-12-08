@@ -173,26 +173,37 @@ int read_image(int argc, char **argv)
     return 0;
 }
 
-int ccl(int argc, char **argv)
+char *ccl(int argc, char **argv)
 {
     if (argc != 4)
     {
         printf("Usage: ./ocr ccl {path to nn} {path to source image}\n");
-        return 1;
+        return NULL;
     }
+    printf("Importing image\n");
     Img *source = img_import(argv[3]);
+    printf("Houghing image\n");
     Img *rotated = hough(source);
+    printf("Saving image\n");
+
     img_save(rotated, "res/rotated.png");
+    printf("Reimport image\n");
+
     Img *new = img_import("res/rotated.png");
-    img_delete(rotated);
+    printf("Deleting old image\n");
+
+    //img_delete(rotated);
+    printf("Successeuh\n");
+
+    return "coucou les copains\n";
     LinkedList *images = ccl_segmentation(new, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);
     char *res = send_images_to_cerveau(images, nn);
     res = spellcheck(res);
     printf("Result: \n\n%s\n", res);
-    save_res(res, "res/res.txt");
-    return 0;
+    //save_res(res, "res/res.txt");
+    return res;
 }
 
 void hough_tmp(int argc, char **argv)
@@ -236,6 +247,5 @@ int main(int argc, char **argv)
         hough_tmp(argc, argv);
     else if (argc == 2)
         printf("Usage: ./ocr write_dataset|learn|read\n"); 
-    
     return 0;
 }

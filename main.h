@@ -10,5 +10,7 @@ void save_res(char *res, char *filepath);
 int write_dataset(int argc, char **argv);
 int learn(int argc, char **argv);
 int read_image(int argc, char **argv);
+char *ccl(int argc, char **argv);
+char *send_images_to_cerveau(LinkedList *chars, NeuralNetwork *nn);
 
 #endif

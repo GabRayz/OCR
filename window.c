@@ -8,6 +8,8 @@
 #include "neuralnetwork.h"
 #include "main.h"
 #include "spellchek.h"
+#include "hough.h"
+#include "ccl.h"
 
 
 int count_saved_files()
@@ -37,10 +39,26 @@ void save_result(char *res, char *filepath)
 
 char *call_nn(Img *img)
 {
-	LinkedList *chars = segmentation(img, true);
+	printf("call_nn: %s\n", img->filepath);
+	//char **argv = malloc(sizeof(char) * 4);
+	//argv[0] = "";
+	//argv[1] = "";
+	//argv[2] = "save/all";
+	//argv[3] = img->filepath;
+	//printf("Calling CCL\n");
+	// char *argv = {"./ocr", "ccl", "save/nn20", img->filepath};
+	//char *res = ccl(4, argv);
+	//printf("Result get\n");
+	Img *rotated = hough(img);
+	img_save(rotated, "res/rotated.png");
+	Img *new = img_import("res/rotated.png");
+
+
+	LinkedList *chars = ccl_segmentation(new, true);
 	NeuralNetwork *nn = nn_load("save/all");
-	char* res = send_to_cerveau(img,chars,nn);
+	char* res = send_images_to_cerveau(chars,nn);
 	res = spellcheck(res);
+	// free(argv);
 	return res;
 }
 
@@ -212,7 +230,7 @@ void init_window()
 	char *dropped_filedir;
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	Img *img = NULL;
-	char *res;
+	char *res = NULL;
 	int nb_file;
 	int right_y = 1;
 	int state = 0;
@@ -237,7 +255,7 @@ void init_window()
 		case SDL_MOUSEBUTTONUP:
 			// If clicked on QUIT
 			if ((isClicked(event.button, quit_pos, 140, 140) & (state == 0))
-					|| (isClicked(event.button, quit_btn_pos, 140, 140) & (state == 1)))
+					|| (isClicked(event.button, quit_btn_pos, 140, 140) & (state == 1 || state == 2)))
 			{
 				run = 0;
 			}
@@ -319,7 +337,7 @@ void init_window()
 			}
 
 			// Free dropped_filedir memory
-			SDL_free(dropped_filedir);
+			// SDL_free(dropped_filedir);
 			break;
 		}
 

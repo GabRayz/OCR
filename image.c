@@ -93,7 +93,7 @@ Img *img_import(char *filepath)
     double *image = img_grayscale(pixels, width * height * 3);
     // Apply filter
     free(pixels);
-
+    printf("before copy: %s\n", filepath);
     Img *res = img_init(width, height);
     res->pixels = image;
     res->filepath = filepath;
@@ -109,7 +109,8 @@ Img *img_import(char *filepath)
     Block *block = img_make_block(res);
     remove_white_margin(res, block);
     Img *trim = img_from_block(res, block);
-    img_delete(res);
+    trim->filepath = filepath;
+    //img_delete(res);
     return trim;
 }
 

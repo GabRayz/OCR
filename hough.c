@@ -6,6 +6,7 @@
 
 #define PRECISION_HOUGH 0.01
 #define SIZE_HOUGH (90 / PRECISION_HOUGH)
+#define M_PI 3.14159265359
 
 Img *hough(Img *source)
 {
