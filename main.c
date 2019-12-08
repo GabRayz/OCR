@@ -180,22 +180,14 @@ char *ccl(int argc, char **argv)
         printf("Usage: ./ocr ccl {path to nn} {path to source image}\n");
         return NULL;
     }
-    printf("Importing image\n");
     Img *source = img_import(argv[3]);
-    printf("Houghing image\n");
     Img *rotated = hough(source);
-    printf("Saving image\n");
 
     img_save(rotated, "res/rotated.png");
-    printf("Reimport image\n");
 
     Img *new = img_import("res/rotated.png");
-    printf("Deleting old image\n");
 
-    //img_delete(rotated);
-    printf("Successeuh\n");
-
-    return "coucou les copains\n";
+    img_delete(rotated);
     LinkedList *images = ccl_segmentation(new, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);

@@ -39,16 +39,6 @@ void save_result(char *res, char *filepath)
 
 char *call_nn(Img *img)
 {
-	printf("call_nn: %s\n", img->filepath);
-	//char **argv = malloc(sizeof(char) * 4);
-	//argv[0] = "";
-	//argv[1] = "";
-	//argv[2] = "save/all";
-	//argv[3] = img->filepath;
-	//printf("Calling CCL\n");
-	// char *argv = {"./ocr", "ccl", "save/nn20", img->filepath};
-	//char *res = ccl(4, argv);
-	//printf("Result get\n");
 	Img *rotated = hough(img);
 	img_save(rotated, "res/rotated.png");
 	Img *new = img_import("res/rotated.png");
@@ -58,7 +48,6 @@ char *call_nn(Img *img)
 	NeuralNetwork *nn = nn_load("save/all");
 	char* res = send_images_to_cerveau(chars,nn);
 	res = spellcheck(res);
-	// free(argv);
 	return res;
 }
 
@@ -363,27 +352,6 @@ void init_window()
 				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
 				SDL_BlitSurface(save_btn,NULL,pScreen, &save_btn_pos);
 			}
-			// else if((state == 1 || state == 2) & isOver(gradient_pos,height,right))
-			// {
-			// 	SDL_BlitSurface(gradient, NULL, pScreen, &gradient_pos);
-			// 	SDL_BlitSurface(group_name, NULL, pScreen, &group_name_pos);
-			// 	if (event.wheel.y > 0) // scroll up
-			// 	{
-			// 		display_img_pos.y -= 30;
-			// 		SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
-			// 	}
-			// 	else if (event.wheel.y < 0) // scroll down
-			// 	{	
-			// 		if(display_img_pos.y- 30 < 0)
-			// 			display_img_pos.y -= 30;
-
-			// 		SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
-			// 	}
-			// 	SDL_BlitSurface(digitalize_btn,NULL,pScreen, &digitalize_btn_pos);
-			// 	SDL_BlitSurface(digitalize,NULL,pScreen, &digitalize_pos);
-			// 	SDL_BlitSurface(return_btn,NULL,pScreen,&return_btn_pos);
-			// 	SDL_BlitSurface(quit_btn,NULL,pScreen,&quit_btn_pos);
-			// }
 			break;
 		}
 		}
