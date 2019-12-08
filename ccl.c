@@ -18,26 +18,28 @@ LinkedList *ccl_segmentation(Img *source, bool whitespaces)
     Node *p = paragraphs->start;
     while (p)
     {
+        // For each block, get the lines
         LinkedList *lines = line_split(source, p->data);
         Node *l = lines->start;
         while (l)
         {
-            // TODO: Add whitespaces between characters
+            // For each line, get the characters and concatenate the result
             chars = list_concat(chars, ccl_segment_block(source, l->data));
+            // Insert a whitespace betwen each line
             if (whitespaces)
             {
-                Block *spacing = block_init();
-                spacing->label = ' ';
-
-                list_insert(chars, node_init(spacing));
+                Img *space = img_init(0,0);
+                space->label = ' ';
+                list_insert(chars, node_init(space));
             }
 
             l = l->next;
         }
 
+        // Insert a new line between each block
         if (whitespaces && p->next)
         {
-            Block *newline = block_init();
+            Img *newline = img_init(0,0);
             newline->label = '\n';
 
             list_insert(chars, node_init(newline));
@@ -138,7 +140,7 @@ void merge_labels(Block *block, LinkedList *labels, int *hist)
         if (current->previous != NULL)
         {
             Block *pBlock = current->previous->data;
-            if (pBlock != NULL && cBlock->x > pBlock->x + pBlock->width + block->height / 3)
+            if (pBlock != NULL && cBlock->x > pBlock->x + pBlock->width + block->height / 4)
             {
                 // Create the whitespace block
                 Block *space = block_init();

@@ -87,7 +87,7 @@ char *spellcheck(char *s)
 	);
 
     char *word_array = strtok(s," ");
-    size_t n = strlen(word_array);
+    // size_t n = strlen(word_array);
     char *w = NULL;
     char *c = malloc(sizeof(char)*2);
 
@@ -123,6 +123,6 @@ char *spellcheck(char *s)
 
     Hunspell_destroy(h);
     free(s);
-    return res+n;
+    return res;
 }
 
