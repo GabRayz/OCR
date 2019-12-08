@@ -28,7 +28,7 @@ The CLI offers more functionalities. Type `./ocr help` to list available command
 
 - Import images
 - Preprocessing : 
-  - Greyscale
+  - Grayscale
   - Noise Reduction
   - Contrast Enhancement
   - Binarization (`Otsu's Method`)
