@@ -23,7 +23,7 @@ Img *img_init(int width, int height)
 void img_delete(Img *image)
 {
     free(image->pixels);
-    free(image->filepath);
+    // free(image->filepath);
     free(image);
 }
 
@@ -104,7 +104,13 @@ Img *img_import(char *filepath)
     // Turn the image in B&W
     img_bw(res->pixels, width * height);
     img_save(res, "res/otsu.png");
-    return res;
+
+    // Remove margins
+    Block *block = img_make_block(res);
+    remove_white_margin(res, block);
+    Img *trim = img_from_block(res, block);
+    img_delete(res);
+    return trim;
 }
 
 void print_image(Img *image)

@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include "ccl.h"
 #include "spellchek.h"
+#include "hough.h"
 
 NeuralNetwork *create_nn(char *filepath, int cycles, int count)
 {
@@ -180,13 +181,36 @@ int ccl(int argc, char **argv)
         return 1;
     }
     Img *source = img_import(argv[3]);
-    LinkedList *images = ccl_segmentation(source, true);
+    Img *rotated = hough(source);
+    img_save(rotated, "res/rotated.png");
+    Img *new = img_import("res/rotated.png");
+    img_delete(rotated);
+    LinkedList *images = ccl_segmentation(new, true);
 
     NeuralNetwork *nn = nn_load(argv[2]);
     char *res = send_images_to_cerveau(images, nn);
     res = spellcheck(res);
     printf("Result: \n\n%s\n", res);
+    save_res(res, "res/res.txt");
     return 0;
+}
+
+void hough_tmp(int argc, char **argv)
+{
+    if (argc != 3)
+        return;
+    
+    Img *source = img_import(argv[2]);
+    Block *tmp = img_make_block(source);
+    remove_white_margin(source, tmp);
+    Img *trim = img_from_block(source, tmp);
+    Img *rotate = hough(trim);
+
+    LinkedList *images = ccl_segmentation(rotate, true);
+    NeuralNetwork *nn = nn_load("save/all");
+    char *res = send_images_to_cerveau(images, nn);
+    res = spellcheck(res);
+    printf("Result: \n\n%s\n", res);
 }
 
 int main(int argc, char **argv)
@@ -208,6 +232,8 @@ int main(int argc, char **argv)
         read_image(argc, argv);
     else if (strcmp(argv[1], "ccl") == 0)
         ccl(argc, argv);
+    else if (strcmp(argv[1], "hough") == 0)
+        hough_tmp(argc, argv);
     else if (argc == 2)
         printf("Usage: ./ocr write_dataset|learn|read\n"); 
     
