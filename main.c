@@ -229,7 +229,7 @@ int main(int argc, char **argv)
     else if (strcmp(argv[1], "learn") == 0)
         learn(argc, argv);
     else if (strcmp(argv[1], "read") == 0)
-        read_image(argc, argv);
+        ccl(argc, argv);
     else if (strcmp(argv[1], "ccl") == 0)
         ccl(argc, argv);
     else if (strcmp(argv[1], "hough") == 0)
