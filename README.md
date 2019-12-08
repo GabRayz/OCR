@@ -20,9 +20,33 @@ The CLI offers more functionalities. Type `./ocr help` to list available command
 
 ## Dependencies
 
-- `SDL2` : `SDL2` is used to make the `Graphical user Interface`.
+- `SDL2` : `SDL2` is used to make the `Graphical User Interface`.
 - `Image Magick 7` : Import, resize, rotate images.
 - `Hunspell 7` : `Hunspell` is a spell checker and morphological analyzer designed for languages with rich morphology and complex word compounding and character encoding.
 
 ## Features
 
+- Import images
+- Preprocessing : 
+  - Greyscale
+  - Noise Reduction
+  - Contrast Enhancement
+  - Binarization (`Otsu's Method`)
+  - Rotation Detection (`Hough's Transformation`)
+  - Rotation Correction
+- Segmentation :
+  - Paragraphs & Lines Detection (`X-Y Cut`)
+  - Characters Detection (Connected Component Labeling `CCL`)
+- Recognition :
+  - Neural Network Loading
+  - Neural Network Recognition
+- Postprocessing :
+  - Uppercase removal
+  - SpellCheck (`Hunspell`)
+- Display (Graphical User Interface)
+
+## Collaborators
+
+- Gabriel Rayzal : github.com/GabRayz
+- Tony Heng : github.com/TonyHg
+- Nathan Cabasso : github.com/Vardiak
