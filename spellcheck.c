@@ -9,11 +9,10 @@ int hasWhiteSpace(char *s)
     size_t length = strlen(s);
     for (size_t i = 0; i < length; i++)
     {
-        if(*(s+i) == ' ')
+        if (*(s + i) == ' ')
             return 1;
     }
     return 0;
-    
 }
 
 char *pickWord(char ***s)
@@ -23,7 +22,7 @@ char *pickWord(char ***s)
         size_t length = sizeof(s) / sizeof(s[0]);
         for (size_t i = 0; i < length; i++)
         {
-            if(!hasWhiteSpace(s[i][0]))
+            if (!hasWhiteSpace(s[i][0]))
                 return s[i][0];
         }
     }
@@ -34,17 +33,17 @@ char *pickWord(char ***s)
 char *spellcheck_word(Hunhandle *h, char *w)
 {
     // Check if the word w is wrongly spelled
-    if(!Hunspell_spell(h, w))
+    if (!Hunspell_spell(h, w))
     {
         // Hunspell suggest severals correct words
         char ***s = malloc(sizeof(char));
         Hunspell_suggest(h, s, w);
-        
+
         // Return the first suggested value
         // if (*s != NULL)
-        //     return s[0][0]; 
+        //     return s[0][0];
         char *res = pickWord(s);
-        if(res != NULL)
+        if (res != NULL)
             return res;
     }
 
@@ -56,11 +55,10 @@ int isSpecial(char c)
     char special[24] = " .,;?/!:&\"\'{([-`_)]}=+*";
     for (size_t i = 0; i < 24; i++)
     {
-        if(c == special[i])
+        if (c == special[i])
             return 1;
     }
     return 0;
-    
 }
 
 void I2l(char *s)
@@ -68,61 +66,63 @@ void I2l(char *s)
     size_t length = strlen(s);
     for (size_t i = 0; i < length; i++)
     {
-        if(*(s+i) == 'I')
-            *(s+i) = 'l';
-        else if (*(s+i) == 'C')
-            *(s+i) = 'c';
-        else if (*(s+i) == 'O')
-            *(s+i) = 'o';
+        if (s[i] == 'I' && i > 0 && s[i - 1] != '\n')
+            s[i] = 'l';
     }
 }
 
 char *spellcheck(char *s)
 {
-    char *res = malloc(sizeof(char) * (strlen(s)+20));
+    size_t size = strlen(s) + 1;
+    char *res = malloc(sizeof(char) * size);
 
     Hunhandle *h = Hunspell_create(
-		"./Dictionnary/en_US.aff",
-		"./Dictionnary/en_US.dic"
-	);
+        "./Dictionnary/en_US.aff",
+        "./Dictionnary/en_US.dic");
 
-    char *word_array = strtok(s," ");
-    // size_t n = strlen(word_array);
-    char *w = NULL;
-    char *c = malloc(sizeof(char)*2);
+    char *word = strtok(s, " ");
+    char *correctedWord = NULL;
+    size_t i = 0;
 
-    while (word_array != NULL) 
+    while (word != NULL)
     {
-        I2l(word_array);
-        if(isSpecial(*word_array))
+        I2l(word);
+
+        correctedWord = spellcheck_word(h, word);
+
+        size_t len = strlen(word);
+        size_t cLen = strlen(correctedWord);
+
+        // Reallocate the buffer according to the new word's length
+        size += (cLen - len);
+        res = realloc(res, size);
+
+        size_t j = 0;
+        while (j < cLen)
+            res[i++] = correctedWord[j++];
+
+        if (isSpecial(word[len - 1]) && correctedWord[cLen - 1] != '.' && correctedWord[cLen - 1] != ',')
         {
-            *c = *word_array;
-            *(c+1) = '\0';
-            strcat(res,c);
-        }
-        
-        w = spellcheck_word(h, word_array);
-        strcat(res,w);
-
-        if(isSpecial(*(word_array+strlen(word_array)-1)) 
-            & (*(w+strlen(w)-1) != '.') 
-            & (*(w+strlen(w)-1) != ','))
-        {
-            *c = *(word_array+strlen(word_array)-1);
-            *(c+1) = '\0';
-            strcat(res,c);
+            res[i++] = word[len - 1];
         }
 
-        strcat(res," ");
-        
-        // printf("original : %s\n",word_array);
-        // printf("suggested : %s\n\n",w);
+        res[i++] = ' ';
 
-        word_array = strtok(NULL, " ");
+        word = strtok(NULL, " ");
     }
+
+    res[i] = '\0';
 
     Hunspell_destroy(h);
     free(s);
+
+    i = 0;
+    while (res[i])
+    {
+        if (i > 0 && res[i - 1] != ' ' && res[i - 1] != '\n' && res[i] >= 'A' && res[i] <= 'Z')
+            res[i] += 'a' - 'A';
+        i++;
+    }
+
     return res;
 }
-
