@@ -38,8 +38,6 @@ Img *apply_angle(Img *source, double angle)
     MagickImportImagePixels(wand, 0, 0, source->width, source->height, "I", DoublePixel, source->pixels);
     MagickRotateImage(wand, pixel, -angle);
     ClearPixelWand(pixel);
-    // Save the image
-    MagickWriteImage(wand, "res/res.png");
 
     int width = MagickGetImageWidth(wand);
     int height = MagickGetImageHeight(wand);

@@ -102,6 +102,7 @@ Img *img_import(char *filepath)
     // img_apply_filter(res, filter, 16);
 
     // Turn the image in B&W
+    img_save(res, "res/grayscale.png");
     img_bw(res->pixels, width * height);
     img_save(res, "res/otsu.png");
 
