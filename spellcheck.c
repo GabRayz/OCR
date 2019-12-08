@@ -4,7 +4,32 @@
 #include <hunspell/hunspell.h>
 #include "linkedlist.h"
 
+int hasWhiteSpace(char *s)
+{
+    size_t length = strlen(s);
+    for (size_t i = 0; i < length; i++)
+    {
+        if(*(s+i) == ' ')
+            return 1;
+    }
+    return 0;
+    
+}
 
+char *pickWord(char ***s)
+{
+    if (*s != NULL)
+    {
+        size_t length = sizeof(s) / sizeof(s[0]);
+        for (size_t i = 0; i < length; i++)
+        {
+            if(!hasWhiteSpace(s[i][0]))
+                return s[i][0];
+        }
+    }
+
+    return NULL;
+}
 
 char *spellcheck_word(Hunhandle *h, char *w)
 {
@@ -16,8 +41,11 @@ char *spellcheck_word(Hunhandle *h, char *w)
         Hunspell_suggest(h, s, w);
         
         // Return the first suggested value
-        if (*s != NULL)
-            return s[0][0]; 
+        // if (*s != NULL)
+        //     return s[0][0]; 
+        char *res = pickWord(s);
+        if(res != NULL)
+            return res;
     }
 
     return w;
@@ -33,6 +61,20 @@ int isSpecial(char c)
     }
     return 0;
     
+}
+
+void I2l(char *s)
+{
+    size_t length = strlen(s);
+    for (size_t i = 0; i < length; i++)
+    {
+        if(*(s+i) == 'I')
+            *(s+i) = 'l';
+        else if (*(s+i) == 'C')
+            *(s+i) = 'c';
+        else if (*(s+i) == 'O')
+            *(s+i) = 'o';
+    }
 }
 
 char *spellcheck(char *s)
@@ -51,6 +93,7 @@ char *spellcheck(char *s)
 
     while (word_array != NULL) 
     {
+        I2l(word_array);
         if(isSpecial(*word_array))
         {
             *c = *word_array;
@@ -62,7 +105,8 @@ char *spellcheck(char *s)
         strcat(res,w);
 
         if(isSpecial(*(word_array+strlen(word_array)-1)) 
-            & (*(w+strlen(w)-1) != '.'))
+            & (*(w+strlen(w)-1) != '.') 
+            & (*(w+strlen(w)-1) != ','))
         {
             *c = *(word_array+strlen(word_array)-1);
             *(c+1) = '\0';
