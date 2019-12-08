@@ -3,6 +3,10 @@ Optical character recognition program based on deep learning.
 
 ## How to use
 
+1. Clone this repository with `git clone git@github.com:GabRayz/OCR.git`.
+2. Compile the project by running the command `make` in the project folder.
+3. Execute the program with `./ocr`.
+
 ### Graphical User Interface
 
 The character recognition program can be used through a GUI. Use `./ocr` to launch it. Drag and drop an image in the GUI to process it. The extracted text is shown on the left side. The result can then be saved into a txt file.
@@ -13,3 +17,12 @@ The CLI offers more functionalities. Type `./ocr help` to list available command
 - `./ocr write_dataset`: Creates a new learning dataset from a directory containing images to be segmented. Each image must contain the following string : `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'()-_.,?!:;`.
 - `./ocr learn`: Trains a new neural network from a given dataset. The so created network can be saved.
 - `./ocr read`: Reads an image using the given neural network. The extracted text is displayed and saved into a txt file.
+
+## Dependencies
+
+- `SDL2` : `SDL2` is used to make the `Graphical user Interface`.
+- `Image Magick 7` : Import, resize, rotate images.
+- `Hunspell 7` : `Hunspell` is a spell checker and morphological analyzer designed for languages with rich morphology and complex word compounding and character encoding.
+
+## Features
+
