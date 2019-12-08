@@ -49,9 +49,12 @@ int isClicked(SDL_MouseButtonEvent mouse, SDL_Rect btn, int btn_height, int btn_
 	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
 }
 
-int isOver(SDL_MouseMotionEvent mouse, SDL_Rect btn, int btn_height, int btn_width)
+int isOver(SDL_Rect btn, int btn_height, int btn_width)
 {
-	return mouse.y > btn.y && mouse.y <= btn.y + btn_height && mouse.x > btn.x && mouse.x <= btn.x + btn_width;
+	int x;
+	int y;
+	SDL_GetMouseState(&x, &y);
+	return y > btn.y && y <= btn.y + btn_height && x > btn.x && x <= btn.x + btn_width;
 }
 
 void init_window()
@@ -182,7 +185,7 @@ void init_window()
 	saved_btn_pos.x = 720;
 	saved_btn_pos.y = 650;
 
-	//Load neural network & run 
+	// imported image 
 	SDL_Surface *image = NULL;
 	
 	SDL_Surface *result;
@@ -211,7 +214,7 @@ void init_window()
 	Img *img = NULL;
 	char *res;
 	int nb_file;
-	int curr_y = 1;
+	int right_y = 1;
 	int state = 0;
 	while (run)
 	{
@@ -301,7 +304,7 @@ void init_window()
 				image = IMG_Load(dropped_filedir);
 				float w = image->w;
 				float h = image->h;
-				display_img_pos.h = left * h / w;
+				display_img_pos.h = right * h / w;
 				SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
 
 				//Blit new menu
@@ -322,26 +325,47 @@ void init_window()
 
 		case (SDL_MOUSEWHEEL):
 		{
-			if (state == 1 || state == 2)
+			if ((state == 1 || state == 2) & isOver(dragdrop_pos,height,left))
 			{
 				SDL_BlitSurface(right_area, NULL, pScreen, &right_area_pos);
 				if (event.wheel.y > 0) // scroll up
 				{
-					curr_y ++;
-					result_pos.y -= 30*curr_y;
+					right_y ++;
+					result_pos.y -= 30*right_y;
 					SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 				}
 				else if (event.wheel.y < 0) // scroll down
 				{	
-					if(result_pos.y- 30*curr_y < 0)
-						curr_y --;
-					result_pos.y -= 30*curr_y;
+					if(result_pos.y- 30*right_y < 0)
+						right_y --;
+					result_pos.y -= 30*right_y;
 
 					SDL_BlitSurface(result, NULL, pScreen, &result_pos);
 				}
 				SDL_BlitSurface(digitalize_btn,NULL,pScreen, &saved_btn_pos);
 				SDL_BlitSurface(save_btn,NULL,pScreen, &save_btn_pos);
 			}
+			// else if((state == 1 || state == 2) & isOver(gradient_pos,height,right))
+			// {
+			// 	SDL_BlitSurface(gradient, NULL, pScreen, &gradient_pos);
+			// 	SDL_BlitSurface(group_name, NULL, pScreen, &group_name_pos);
+			// 	if (event.wheel.y > 0) // scroll up
+			// 	{
+			// 		display_img_pos.y -= 30;
+			// 		SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+			// 	}
+			// 	else if (event.wheel.y < 0) // scroll down
+			// 	{	
+			// 		if(display_img_pos.y- 30 < 0)
+			// 			display_img_pos.y -= 30;
+
+			// 		SDL_BlitScaled(image, NULL, pScreen, &display_img_pos);
+			// 	}
+			// 	SDL_BlitSurface(digitalize_btn,NULL,pScreen, &digitalize_btn_pos);
+			// 	SDL_BlitSurface(digitalize,NULL,pScreen, &digitalize_pos);
+			// 	SDL_BlitSurface(return_btn,NULL,pScreen,&return_btn_pos);
+			// 	SDL_BlitSurface(quit_btn,NULL,pScreen,&quit_btn_pos);
+			// }
 			break;
 		}
 		}
