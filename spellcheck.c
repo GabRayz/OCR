@@ -73,7 +73,7 @@ void I2l(char *s)
 
 char *spellcheck(char *s)
 {
-    size_t size = strlen(s) + 1;
+    int size = strlen(s) + 1;
     char *res = malloc(sizeof(char) * size);
 
     Hunhandle *h = Hunspell_create(
@@ -90,14 +90,17 @@ char *spellcheck(char *s)
 
         correctedWord = spellcheck_word(h, word);
 
-        size_t len = strlen(word);
-        size_t cLen = strlen(correctedWord);
+
+        int len = strlen(word);
+        int cLen = strlen(correctedWord);
 
         // Reallocate the buffer according to the new word's length
-        size += (cLen - len);
-        res = realloc(res, size);
-
-        size_t j = 0;
+	if (cLen - len > 0)
+	{
+		size += (cLen - len);
+        	res = realloc(res, size);
+	}
+        int j = 0;
         while (j < cLen)
             res[i++] = correctedWord[j++];
 
@@ -105,12 +108,10 @@ char *spellcheck(char *s)
         {
             res[i++] = word[len - 1];
         }
-
         res[i++] = ' ';
 
         word = strtok(NULL, " ");
     }
-
     res[i] = '\0';
 
     Hunspell_destroy(h);

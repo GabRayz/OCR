@@ -47,6 +47,7 @@ char *call_nn(Img *img)
 	LinkedList *chars = ccl_segmentation(new, true);
 	NeuralNetwork *nn = nn_load("save/all");
 	char* res = send_images_to_cerveau(chars,nn);
+	printf("Spell checking...\n");
 	res = spellcheck(res);
 	return res;
 }

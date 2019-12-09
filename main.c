@@ -193,7 +193,7 @@ char *ccl(int argc, char **argv)
     NeuralNetwork *nn = nn_load(argv[2]);
     char *res = send_images_to_cerveau(images, nn);
     res = spellcheck(res);
-    // printf("Result: \n\n%s\n", res);
+    printf("Result: \n\n%s\n", res);
     //save_res(res, "res/res.txt");
     return res;
 }
