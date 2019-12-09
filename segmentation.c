@@ -90,7 +90,7 @@ Img *img_from_block(Img *source, Block *block)
     return res;
 }
 
-double threshold = 0.9999;
+double threshold = 0.99;
 
 void remove_white_margin(Img *img, Block *block)
 {
@@ -105,7 +105,9 @@ Block *remove_top_margin(Img *img, Block *block)
     // Remove top margin
     int y = block->y;
     while (horizontal_white_rate(img, block, y) > threshold && y < block->y + block->height)
+    {
         y++;
+    }
 
     block->height = block->height - (y - block->y);
     block->y = y;
@@ -208,6 +210,9 @@ LinkedList *block_split_vertical(Img *image, Block *block, bool shouldRetry)
     int blackWidth = 0;
     int whiteWidth = 0;
     int currentColor = 0;
+    if (block->width <= 0 || block->height <= 0)
+        return NULL;
+
     // Go through columns until finding a white column
     while (whiteWidth <= 20 && x < block->x + block->width)
     {
@@ -264,7 +269,12 @@ LinkedList *block_split_vertical(Img *image, Block *block, bool shouldRetry)
     res2->height = block->height;
     LinkedList *child1 = block_split_horizontal(image, res1, false);
     LinkedList *child2 = block_split_vertical(image, res2, true);
-    return list_concat(child1, child2);
+    if (child1 != NULL && child2 != NULL)
+        return list_concat(child1, child2);
+    else if(child2 == NULL)
+        return child1;
+    else
+        return child2;
 }
 
 LinkedList *block_split_horizontal(Img *image, Block *block, bool shouldRetry)
@@ -278,6 +288,9 @@ LinkedList *block_split_horizontal(Img *image, Block *block, bool shouldRetry)
     int blackHeight = 0;
     int whiteHeight = 0;
     int currentColor = 0;
+    if (block->width <= 0 || block->height <= 0)
+        return NULL;
+
     while (whiteHeight <= blackHeight * 1.5 && y < block->y + block->height)
     {
         double rate = horizontal_white_rate(image, block, y);
@@ -338,7 +351,12 @@ LinkedList *block_split_horizontal(Img *image, Block *block, bool shouldRetry)
     LinkedList *child1 = block_split_horizontal(image, res1, false);
     LinkedList *child2 = block_split_vertical(image, res2, true);
 
-    return list_concat(child1, child2);
+    if (child1 != NULL && child2 != NULL)
+        return list_concat(child1, child2);
+    else if(child2 == NULL)
+        return child1;
+    else
+        return child2;
 }
 
 LinkedList *line_split(Img *image, Block *block)

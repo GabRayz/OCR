@@ -19,15 +19,14 @@ char *pickWord(char ***s)
 {
     if (*s != NULL)
     {
-	int i = 0;
-	while (s[i] != NULL)
-	{
-		if (!hasWhiteSpace(s[i][0]))
-			return s[i][0];
-		i++;
-	}
+        int i = 0;
+        while (s[i] != NULL)
+        {
+            if (!hasWhiteSpace(s[i][0]))
+                return s[i][0];
+            i++;
+        }
     }
-
     return NULL;
 }
 
@@ -41,11 +40,11 @@ char *spellcheck_word(Hunhandle *h, char *w)
         Hunspell_suggest(h, s, w);
 
         // Return the first suggested value
-        // if (*s != NULL)
-        //     return s[0][0];
-        char *res = pickWord(s);
-        if (res != NULL)
-            return res;
+        if (*s != NULL)
+            return s[0][0];
+        // char *res = pickWord(s);
+        // if (res != NULL)
+        //     return res;
     }
 
     return w;
